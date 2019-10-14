@@ -6,6 +6,6 @@ Vue.config.productionTip = false
 
 new Vue({
   vuetify,
-  delimiters: ['[[', ']]'],
+  // delimiters: ['[[', ']]'],
   render: h => h(App)
 }).$mount('#app')
