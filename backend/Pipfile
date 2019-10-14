@@ -16,6 +16,9 @@ tensorflow-gpu = "*"
 jpype1 = "*"
 pymongo = "*"
 keras = "*"
+djangorestframework = "*"
+markdown = "*"
+django-filter = "*"
 
 [requires]
 python_version = "3.6"
