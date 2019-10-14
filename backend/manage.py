@@ -2,6 +2,7 @@
 """Django's command-line utility for administrative tasks."""
 import os
 import sys
+from builtins import print
 
 
 def main():
@@ -18,4 +19,5 @@ def main():
 
 
 if __name__ == '__main__':
+    print("test commit")
     main()
