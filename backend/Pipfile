@@ -8,6 +8,14 @@ verify_ssl = true
 [packages]
 django = "*"
 django-webpack-loader = "*"
+numpy = "*"
+pandas = "*"
+scikit-learn = "*"
+scipy = "*"
+tensorflow-gpu = "*"
+jpype1 = "*"
+pymongo = "*"
+keras = "*"
 
 [requires]
 python_version = "3.6"
