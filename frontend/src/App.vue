@@ -1,36 +1,39 @@
 <template>
-  <v-app>
-    <v-app-bar app>
-      <v-toolbar-title class="headline text-uppercase">
-        <span>Vuetify</span>
-        <span class="font-weight-light">MATERIAL DESIGN</span>
-      </v-toolbar-title>
-      <v-spacer></v-spacer>
-      <v-btn
-        text
-        href="https://github.com/vuetifyjs/vuetify/releases/latest"
-        target="_blank"
-      >
-        <span class="mr-2">Latest Release</span>
-      </v-btn>
-    </v-app-bar>
+	<v-app>
+		<v-content>
+			<v-container fluid fill-height>
+				<v-layout>
+					<v-flex
+							xs2
+					>
 
-    <v-content>
-      <HelloWorld/>
-    </v-content>
-  </v-app>
+					</v-flex>
+					<v-flex
+							xs8
+					>
+						<LineChart/>
+					</v-flex>
+					<v-flex
+							xs2
+					>
+
+					</v-flex>
+				</v-layout>
+			</v-container>
+		</v-content>
+	</v-app>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld';
+	import LineChart from "@/components/LineChart";
 
-export default {
-  name: 'App',
-  components: {
-    HelloWorld,
-  },
-  data: () => ({
-    //
-  }),
-};
+	export default {
+		name: 'App',
+		components: {
+			LineChart
+		},
+		data: () => ({
+			//
+		}),
+	};
 </script>
