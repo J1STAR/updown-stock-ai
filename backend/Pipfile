@@ -20,6 +20,7 @@ djangorestframework = "*"
 markdown = "*"
 django-filter = "*"
 django-cors-headers = "*"
+matplotlib = "*"
 
 [requires]
 python_version = "3.6"
