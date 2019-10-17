@@ -3,59 +3,74 @@
 		<v-layout
 				wrap
 		>
-			<v-flex xs12>
-				<v-sparkline
-						:value="value"
-						:gradient="gradient"
-						:smooth="radius || false"
-						:padding="padding"
-						height=100
-						:line-width="width"
-						:stroke-linecap="lineCap"
-						:gradient-direction="gradientDirection"
-						:fill="fill"
-						:type="type"
-						:auto-line-width="autoLineWidth"
-						auto-draw
-				>
-				</v-sparkline>
+			<v-flex xs10>
+				<GChart
+						type="LineChart"
+						:data="chartData"
+						:options="chartOptions"
+						:events="chartEvents"
+				/>
+			</v-flex>
+			<v-flex xs2>
+				predict container
 			</v-flex>
 		</v-layout>
 	</v-container>
 </template>
 
 <script>
-	const gradients = [
-		['#222'],
-		['#42b3f4'],
-		['red', 'orange', 'yellow'],
-		['purple', 'violet'],
-		['#00c6ff', '#F0F', '#FF0'],
-		['#f72047', '#ffd200', '#1feaea'],
-	]
-
 	export default {
 		name: "LineChart",
 		props: {},
 		data() {
 			return {
-				width: 2,
-				radius: 10,
-				padding: 8,
-				lineCap: 'round',
-				gradient: gradients[5],
-				value: [0, 2, 5, 9, 5, 10, 3, 5, 0, 0, 1, 8, 2, 9, 0],
-				gradientDirection: 'top',
-				gradients,
-				fill: false,
-				type: 'trend',
-				autoLineWidth: false,
-			};
+				chartData: [
+					['Year', 'Sales'],
+					['2019/10/01', 1000],
+					['2019/10/02', 1170],
+					['2019/10/03', 660],
+					['2019/10/04', 1030],
+					['2019/10/05', 660],
+					['2019/10/06', 660],
+					['2019/10/07', 660],
+					['2019/10/08', 660],
+					['2019/10/09', 660],
+					['2019/10/10', 660],
+					['2019/10/11', 660],
+					['2019/10/12', 660],
+					['2019/10/13', 660],
+					['2019/10/14', 660],
+					['2019/10/15', 660],
+				],
+				chartOptions: {
+					chart: {
+						title: 'Company Performance',
+						subtitle: 'Sales, Expenses, and Profit: 2014-2017',
+					},
+					pointsVisible: true
+				},
+				chartEvents: {
+					'select': () => {
+						this.renderPredict();
+					}
+				}
+			}
 		},
 		mounted() {
-
 		},
-		methods: {},
+		methods: {
+			renderPredict: function() {
+				let stockChart = document.querySelector('svg');
+
+				let circles = document.querySelectorAll('svg g circle');
+				let lastCircle = circles[circles.length - 1];
+
+				let cx = Number(lastCircle.getAttribute('cx'));
+				let cy = Number(lastCircle.getAttribute('cy'));
+
+				stockChart.innerHTML += '<defs><marker id="Triangle" fill="red" stroke="red" viewBox="0 0 10 10" refX="1" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z"></path></marker></defs><polyline points="'+cx+','+cy+' '+(cx+50)+','+(cy-50)+'" fill="none" stroke="red" stroke-width="2" marker-end="url(#Triangle)"></polyline><polyline points="'+cx+','+cy+' '+(cx+50)+','+(cy-100)+'" fill="none" stroke="red" stroke-width="2" marker-end="url(#Triangle)"></polyline><polyline points="'+cx+','+cy+' '+(cx+50)+','+(cy+50)+'" fill="none" stroke="red" stroke-width="2" marker-end="url(#Triangle)"></polyline>'
+			}
+		},
 		filters: {},
 		components: {}
 	}

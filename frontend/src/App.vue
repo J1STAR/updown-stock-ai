@@ -11,7 +11,7 @@
 					<v-flex
 							xs8
 					>
-						<LineChart/>
+						<line-chart/>
 					</v-flex>
 					<v-flex
 							xs2
@@ -33,7 +33,6 @@
 			LineChart
 		},
 		data: () => ({
-			//
 		}),
 	};
 </script>
