@@ -14,10 +14,51 @@ print(client)
 db = client.sample
 
 connection = db.user
-docs = connection.find()
 
-for i in docs:
+for i in connection.find():
     print(i)
+
+# insert
+
+# userInfo = {
+#     'name': 'jung',
+#     'age': 45,
+#     'tel': '015-6346-1235'
+# }
+#
+# connection.insert(userInfo)
+# docs = connection.find()
+
+# select
+print()
+for user in connection.find({'name': 'choi'}):
+    print(user)
+
+# updateOne - 매칭되는 한개의 document 업데이트
+result = connection.update_one(
+    {'name':'jang'},   #수정할 데이터 찾을 조건
+    {
+        '$set':{'age': 30},
+                #수정값
+    })
+print(result.matched_count)  #수정할 데이터 찾은 건수
+print(result.modified_count)  #수정된 데이터 건수
+
+for i in connection.find():
+    print(i)
+print()
+
+# updateMany - 매칭되는 list of document 업데이트
+connection.update_many({'name': 'choi'},
+                      {'$set': {'age': 20}
+                       })
+
+for i in connection.find():
+    print(i)
+
+# delete
+result = connection.delete_many({'age': 20})
+print(result.deleted_count)
 
 #접속 해제
 client.close()
