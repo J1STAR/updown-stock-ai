@@ -28,7 +28,11 @@
             MainRepository.setUsers();
         },
         methods: {
-
+            loadUser: function() {
+              this.$http.get('http://localhost:8000/api/user/유져명').then((res) => {
+                console.log(res)
+              })
+            }
         },
         computed: {
             getUsers: function () {
