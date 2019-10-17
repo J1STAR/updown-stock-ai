@@ -1,6 +1,7 @@
 <template>
 	<v-container fluid fill-height pa-0>
 		<v-layout
+				align-center
 				wrap
 		>
 			<v-flex xs10>
@@ -47,10 +48,23 @@
 						title: 'Company Performance',
 						subtitle: 'Sales, Expenses, and Profit: 2014-2017',
 					},
-					pointsVisible: true
+					pointsVisible: true,
+					height: 800,
+					series: {
+						0: {visibleInLegend: false}
+					},
+					vAxis: {
+						title: "Closing Price",
+						format: "# 원"
+					},
+					hAxis: {
+						title: "Date",
+						slantedText: true,
+						slantedTextAngle: 90
+					}
 				},
 				chartEvents: {
-					'select': () => {
+					'ready': () => {
 						this.renderPredict();
 					}
 				}
