@@ -1,6 +1,8 @@
 <template>
     <v-container>
         <SignUp/>
+        <br>
+        <router-view/>
     </v-container>
 </template>
 
