@@ -21,6 +21,7 @@ markdown = "*"
 django-filter = "*"
 django-cors-headers = "*"
 matplotlib = "*"
+tensorflow = "*"
 
 [requires]
 python_version = "3.6"

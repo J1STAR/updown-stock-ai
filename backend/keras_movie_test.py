@@ -27,21 +27,40 @@ network.add(layers.Dense(units=1, activation="sigmoid"))
 
 network.compile(loss="binary_crossentropy", optimizer="rmsprop", metrics=["accuracy"])
 
-history = network.fit(features_train, target_train, epochs=15, verbose=0, batch_size=100, validation_data=(features_test, target_test))
+history = network.fit(features_train, target_train, epochs=15, verbose=0, batch_size=1000, validation_data=(features_test, target_test))
+
+
+# print(history.history.keys())
 
 training_loss = history.history["loss"]
 test_loss = history.history["val_loss"]
-
+#
 epoch_count = range(1, len(training_loss)+1)
+#
+# plt.plot(epoch_count, training_loss, "r--")
+# plt.plot(epoch_count, test_loss, "b-")
+# plt.legend(["Training Loss", "Test loss"])
+# plt.xlabel("Epoch")
+# plt.ylabel("Loss")
+# plt.show()
 
-plt.plot(epoch_count, training_loss, "r--")
-plt.plot(epoch_count, test_loss, "b-")
-plt.legend(["Training Loss", "Test loss"])
+training_accuracy = history.history["accuracy"]
+
+test_accuracy = history.history["val_accuracy"]
+
+plt.plot(epoch_count, training_accuracy, "r--")
+
+plt.plot(epoch_count, test_accuracy, "b-")
+
+plt.legend(["Training Accuracy", "Test Accuracy"])
+
 plt.xlabel("Epoch")
-plt.ylabel("Loss")
+plt.ylabel("Accuracy Score")
+
 plt.show()
 
-# predicted_target = network.predict(features_test)
+
+predicted_target = network.predict(features_test)
 
 
 
@@ -54,4 +73,4 @@ plt.xlabel('length of samples')
 plt.ylabel('number of samples')
 plt.show()
 print(target_test[:50])
-# print(predicted_target[:50])
+print(predicted_target[:50])
