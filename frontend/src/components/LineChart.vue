@@ -26,7 +26,7 @@
 		data() {
 			return {
 				chartData: [
-					['Year', 'Sales'],
+					['Date', 'Closing Price'],
 					['2019/10/01', 1000],
 					['2019/10/02', 1170],
 					['2019/10/03', 660],
@@ -41,7 +41,37 @@
 					['2019/10/12', 660],
 					['2019/10/13', 660],
 					['2019/10/14', 660],
-					['2019/10/15', 660],
+					['2019/10/15', 950],
+					['2019/10/01', 1000],
+					['2019/10/02', 1170],
+					['2019/10/03', 660],
+					['2019/10/04', 1030],
+					['2019/10/05', 660],
+					['2019/10/06', 660],
+					['2019/10/07', 660],
+					['2019/10/08', 660],
+					['2019/10/09', 660],
+					['2019/10/10', 660],
+					['2019/10/11', 660],
+					['2019/10/12', 660],
+					['2019/10/13', 660],
+					['2019/10/14', 660],
+					['2019/10/15', 950],
+					['2019/10/01', 1000],
+					['2019/10/02', 1170],
+					['2019/10/03', 660],
+					['2019/10/04', 1030],
+					['2019/10/05', 660],
+					['2019/10/06', 660],
+					['2019/10/07', 660],
+					['2019/10/08', 660],
+					['2019/10/09', 660],
+					['2019/10/10', 660],
+					['2019/10/11', 660],
+					['2019/10/12', 660],
+					['2019/10/13', 660],
+					['2019/10/14', 660],
+					['2019/10/15', 950],
 				],
 				chartOptions: {
 					chart: {
@@ -74,7 +104,7 @@
 		},
 		methods: {
 			renderPredict: function() {
-				let stockChart = document.querySelector('svg');
+				let stockChart = document.querySelector('svg > g:nth-child(3)');
 
 				let circles = document.querySelectorAll('svg g circle');
 				let lastCircle = circles[circles.length - 1];
@@ -82,7 +112,7 @@
 				let cx = Number(lastCircle.getAttribute('cx'));
 				let cy = Number(lastCircle.getAttribute('cy'));
 
-				stockChart.innerHTML += '<defs><marker id="Triangle" fill="red" stroke="red" viewBox="0 0 10 10" refX="1" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z"></path></marker></defs><polyline points="'+cx+','+cy+' '+(cx+50)+','+(cy-50)+'" fill="none" stroke="red" stroke-width="2" marker-end="url(#Triangle)"></polyline><polyline points="'+cx+','+cy+' '+(cx+50)+','+(cy-100)+'" fill="none" stroke="red" stroke-width="2" marker-end="url(#Triangle)"></polyline><polyline points="'+cx+','+cy+' '+(cx+50)+','+(cy+50)+'" fill="none" stroke="red" stroke-width="2" marker-end="url(#Triangle)"></polyline>'
+				stockChart.innerHTML = '<g><defs><marker id="Triangle" fill="red" stroke="red" viewBox="0 0 10 10" refX="1" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z"></path></marker></defs><polyline points="'+cx+','+cy+' '+(cx+50)+','+(cy-50)+'" fill="none" stroke="red" stroke-width="2" marker-end="url(#Triangle)"></polyline><polyline points="'+cx+','+cy+' '+(cx+50)+','+(cy-100)+'" fill="none" stroke="red" stroke-width="2" marker-end="url(#Triangle)"></polyline><polyline points="'+cx+','+cy+' '+(cx+50)+','+(cy+50)+'" fill="none" stroke="red" stroke-width="2" marker-end="url(#Triangle)"></polyline></g>' + stockChart.innerHTML
 			}
 		},
 		filters: {},
