@@ -1,128 +1,82 @@
-'''
-This script shows how to predict stock prices using a basic RNN
-'''
-import tensorflow as tf
-import numpy as np
-import matplotlib
-import os
-
-
-# tf.set_random_seed(777)  # reproducibility
-
-tf.compat.v1.disable_eager_execution()
-
-tf.compat.v1.random.set_random_seed(777)
-
-if "DISPLAY" not in os.environ:
-    # remove Travis CI Error
-    matplotlib.use('Agg')
-
+from __future__ import absolute_import, division, print_function, unicode_literals
+import pandas as pd
+import collections
 import matplotlib.pyplot as plt
+import numpy as np
 
+import tensorflow as tf
+
+from tensorflow.keras import layers
+
+tf.compat.v1.set_random_seed(777)
+
+seq_length = 7
+data_dim = 5
+hidden_dim = 10
+output_dim = 1
+learing_rate = 0.01
+iterations = 500
+LSTM_stack = 1
 
 def MinMaxScaler(data):
-    ''' Min Max Normalization
-    Parameters
-    ----------
-    data : numpy.ndarray
-        input data to be normalized
-        shape: [Batch size, dimension]
-    Returns
-    ----------
-    data : numpy.ndarry
-        normalized data
-        shape: [Batch size, dimension]
-    References
-    ----------
-    .. [1] http://sebastianraschka.com/Articles/2014_about_feature_scaling.html
-    '''
     numerator = data - np.min(data, 0)
     denominator = np.max(data, 0) - np.min(data, 0)
     # noise term prevents the zero division
     return numerator / (denominator + 1e-7)
 
 
-# train Parameters
-seq_length = 7
-data_dim = 5
-hidden_dim = 10
-output_dim = 1
-learning_rate = 0.01
-iterations = 500
+pd.set_option('display.max_rows', 500)
+# print(pd.set_option.key())
+code_df = pd.read_html('http://kind.krx.co.kr/corpgeneral/corpList.do?method=download&searchType=13', header=0)[0]
 
-# Open, High, Low, Volume, Close
-xy = np.loadtxt('stock.csv', delimiter=',')
-xy = xy[::-1]  # reverse order (chronically ordered)
+# 종목코드가 6자리이기 때문에 6자리를 맞춰주기 위해 설정해줌
 
-# train/test split
-train_size = int(len(xy) * 0.7)
-train_set = xy[0:train_size]
-test_set = xy[train_size - seq_length:]  # Index from [train_size - seq_length] to utilize past sequence
+code_df.종목코드 = code_df.종목코드.map('{:06d}'.format)
 
-# Scale each
-train_set = MinMaxScaler(train_set)
-test_set = MinMaxScaler(test_set)
+code_df = code_df[['회사명', '종목코드']]
 
-# build datasets
-def build_dataset(time_series, seq_length):
-    dataX = []
-    dataY = []
-    for i in range(0, len(time_series) - seq_length):
-        _x = time_series[i:i + seq_length, :]
-        _y = time_series[i + seq_length, [-1]]  # Next close price
-        print(_x, "->", _y)
-        dataX.append(_x)
-        dataY.append(_y)
-    return np.array(dataX), np.array(dataY)
+code_df = code_df.rename(columns={'회사명': 'name', '종목코드': 'code'})
 
-trainX, trainY = build_dataset(train_set, seq_length)
-testX, testY = build_dataset(test_set, seq_length)
+print(code_df.head())
 
-# input place holders
+def get_url(item_name, code_df):
+    code = code_df.query("name=='{}'".format(item_name))['code'].to_string(index=False)
+    print(code[1:])
+    url = 'http://finance.naver.com/item/sise_day.nhn?code={code}'.format(code=code[1:])
+
+    print("요청 URL = {}".format(url))
+
+    return url
+
+item_name ='삼성전자'
+url = get_url(item_name, code_df)
+
+df = pd.DataFrame()
+
+for page in range(1, 5):
+    pg_url = '{url}&page={page}'.format(url=url, page=page)
+    df = df.append(pd.read_html(pg_url, header=0)[0], ignore_index=True)
+    # print(df)
+df = df.dropna()
+
+df.drop(['날짜', '전일비'], axis=1, inplace=True)
+
+dataset_temp = df.as_matrix()
 
 
-# X = tf.compat.v1.placeholder(tf.float32, [None, seq_length, data_dim])
-X = tf.compat.v1.placeholder(tf.float32, shape=(None, seq_length, data_dim))
-Y = tf.compat.v1.placeholder(tf.float32, shape=(None, 1))
-# Y = tf.compat.v1.placeholder(tf.float32, [None, 1])
+print(df)
 
-# build a LSTM network
-cell = tf.contrib.rnn.BasicLSTMCell(
-    num_units=hidden_dim, state_is_tuple=True, activation=tf.tanh)
-outputs, _states = tf.nn.dynamic_rnn(cell, X, dtype=tf.float32)
-Y_pred = tf.contrib.layers.fully_connected(
-    outputs[:, -1], output_dim, activation_fn=None)  # We use the last cell's output
+# 여기까지 주식 데이터 가져오는 부분
 
-# cost/loss
-loss = tf.reduce_sum(tf.square(Y_pred - Y))  # sum of the squares
-# optimizer
-optimizer = tf.train.AdamOptimizer(learning_rate)
-train = optimizer.minimize(loss)
-
-# RMSE
-targets = tf.placeholder(tf.float32, [None, 1])
-predictions = tf.placeholder(tf.float32, [None, 1])
-rmse = tf.sqrt(tf.reduce_mean(tf.square(targets - predictions)))
-
-with tf.Session() as sess:
-    init = tf.global_variables_initializer()
-    sess.run(init)
-
-    # Training step
-    for i in range(iterations):
-        _, step_loss = sess.run([train, loss], feed_dict={
-                                X: trainX, Y: trainY})
-        print("[step: {}] loss: {}".format(i, step_loss))
-
-    # Test step
-    test_predict = sess.run(Y_pred, feed_dict={X: testX})
-    rmse_val = sess.run(rmse, feed_dict={
-                    targets: testY, predictions: test_predict})
-    print("RMSE: {}".format(rmse_val))
-
-    # Plot predictions
-    plt.plot(testY)
-    plt.plot(test_predict)
-    plt.xlabel("Time Period")
-    plt.ylabel("Stock Price")
-    plt.show()
+# model = tf.keras.Sequential()
+# # Add an Embedding layer expecting input vocab of size 1000, and
+# # output embedding dimension of size 64.
+# model.add(layers.Embedding(input_dim=1000, output_dim=64))
+#
+# # Add a LSTM layer with 128 internal units.
+# model.add(layers.LSTM(128))
+#
+# # Add a Dense layer with 10 units and softmax activation.
+# model.add(layers.Dense(10, activation='softmax'))
+#
+# print(model.summary())

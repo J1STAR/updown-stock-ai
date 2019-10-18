@@ -22,6 +22,9 @@ django-filter = "*"
 django-cors-headers = "*"
 matplotlib = "*"
 tensorflow = "*"
+pandas-datareader = "*"
+html5lib = "*"
+beautifulsoup4 = "*"
 
 [requires]
 python_version = "3.6"
