@@ -20,6 +20,9 @@ djangorestframework = "*"
 markdown = "*"
 django-filter = "*"
 django-cors-headers = "*"
+django-rest-swagger = "*"
+mongoengine = "*"
+django-rest-framework-mongoengine = "*"
 
 [requires]
 python_version = "3.6"
