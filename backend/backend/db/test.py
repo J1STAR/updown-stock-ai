@@ -20,14 +20,14 @@ for i in connection.find():
 
 # insert
 
-# userInfo = {
-#     'name': 'jung',
-#     'age': 45,
-#     'tel': '015-6346-1235'
-# }
-#
-# connection.insert(userInfo)
-# docs = connection.find()
+userInfo = {
+    'name': 'jung',
+    'age': 55,
+    'tel': '015-6346-1235'
+}
+
+connection.insert(userInfo)
+docs = connection.find()
 
 # select
 print()

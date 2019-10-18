@@ -25,11 +25,12 @@
             }
         },
         mounted() {
-            MainRepository.setUsers();
+            // MainRepository.setUsers();
+            this.loadUser();
         },
         methods: {
             loadUser: function() {
-              this.$http.get('http://localhost:8000/api/user/유져명').then((res) => {
+              this.$http.get('/api').then((res) => {
                 console.log(res)
               })
             }
