@@ -97,7 +97,7 @@
 		},
 		methods: {
 			test: function() {
-				this.$http.get('/item/sise_day.nhn?code=005930&page=1')
+				this.$http.get('/stocks')
 					.then((res) => {
 					console.log(res)
 				})
