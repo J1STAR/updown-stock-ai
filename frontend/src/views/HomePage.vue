@@ -25,10 +25,15 @@
             }
         },
         mounted() {
+            // this.getUsersMethod();
             MainRepository.setUsers();
         },
         methods: {
-
+            getUsersMethod: function() {
+                this.$http.get('/api').then((res) => {
+                    console.log(res.data)
+                })
+            }
         },
         computed: {
             getUsers: function () {

@@ -41,7 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'corsheaders',
     'rest_framework',
-    'rest_framework_mongoengine',
+    'api',
 ]
 
 MIDDLEWARE = [
@@ -86,7 +86,7 @@ DATABASES = {
 }
 
 MONGO_DATABASE_NAME = 'sample'
-MONGO_HOST = '127.0.0.1'
+MONGO_HOST = 'localhost'
 MONGO_PORT = 27017
 connect(MONGO_DATABASE_NAME, host=MONGO_HOST, port=MONGO_PORT)
 
@@ -130,5 +130,5 @@ USE_TZ = True
 
 STATIC_URL = '/assets/'
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'dist_example/assets')
+    os.path.join(BASE_DIR, 'dist/assets')
 ]

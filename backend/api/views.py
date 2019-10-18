@@ -7,6 +7,7 @@ from .serializers import UserSerializer
 
 # Create your views here.
 
+
 class UserView(APIView):
     def get(self, request):
         serializer = UserSerializer(User.objects.all(), many=True)
@@ -24,4 +25,3 @@ class UserView(APIView):
             response = serializer.data
 
             return Response(response, status=status.HTTP_200_OK)
-
