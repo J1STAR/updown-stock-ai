@@ -1,38 +1,43 @@
 <template>
 	<v-app>
 		<v-content>
-			<v-container fluid fill-height>
-				<v-layout>
-					<v-flex
-							xs2
-					>
+			<v-flex id="stock-chart-container" xs12>
+				<stock-chart-view></stock-chart-view>
+			</v-flex>
+			<v-flex id="info-chart-container" xs12>
 
-					</v-flex>
-					<v-flex
-							xs8
-					>
-						<line-chart/>
-					</v-flex>
-					<v-flex
-							xs2
-					>
-
-					</v-flex>
-				</v-layout>
-			</v-container>
+			</v-flex>
 		</v-content>
 	</v-app>
 </template>
 
 <script>
-	import LineChart from "@/components/LineChart";
+	import StockChartView from "@/Views/StockChartView";
 
 	export default {
 		name: 'App',
 		components: {
-			LineChart
+			StockChartView,
 		},
 		data: () => ({
 		}),
 	};
 </script>
+
+<style>
+	* {
+		box-sizing: border-box;
+	}
+
+	body {
+		background-color: white;
+	}
+
+	#stock-chart-container {
+		height: 600px
+	}
+
+	#info-chart-container {
+		height: 300px
+	}
+</style>
