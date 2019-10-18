@@ -25,6 +25,7 @@
             }
         },
         mounted() {
+<<<<<<< HEAD
             // MainRepository.setUsers();
             this.loadUser();
         },
@@ -33,6 +34,16 @@
               this.$http.get('/api').then((res) => {
                 console.log(res)
               })
+=======
+            // this.getUsersMethod();
+            MainRepository.setUsers();
+        },
+        methods: {
+            getUsersMethod: function() {
+                this.$http.get('/api').then((res) => {
+                    console.log(res.data)
+                })
+>>>>>>> b17d8142c95937e94a2d3babc9ae1e181213a81a
             }
         },
         computed: {

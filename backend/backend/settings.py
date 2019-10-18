@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 
 import os
-from mongoengine import connect
+from mongoengine import *
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -40,8 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'corsheaders',
     'rest_framework',
-    'rest_framework_mongoengine',
-    'api'
+    'api',
 ]
 
 MIDDLEWARE = [
@@ -84,6 +83,7 @@ DATABASES = {
         'ENGINE': '',
     }
 }
+
 MONGO_DATABASE_NAME = 'sample'
 MONGO_HOST = 'localhost'
 MONGO_PORT = 27017
@@ -127,5 +127,5 @@ USE_TZ = True
 
 STATIC_URL = '/assets/'
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'dist_example/assets')
+    os.path.join(BASE_DIR, 'dist/assets')
 ]
