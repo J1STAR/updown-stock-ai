@@ -26,7 +26,7 @@ SECRET_KEY = 'r#l=%@#(34nzn)!ed%i665=o4i!@piw=+rv=y)h8=@y!o+gq$9'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['j1star.ddns.net', 'localhost', '127.0.0.1']
 
 
 # Application definition
@@ -43,6 +43,8 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -76,7 +78,6 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
-
 DATABASES = {
     'default': {
         'ENGINE': ''
@@ -85,7 +86,7 @@ DATABASES = {
 
 # Configure Mongo as database. Replace below values as required
 MONGO_DATABASE_NAME = 'ssafy_stock_ai'
-MONGO_HOST = '127.0.0.1'
+MONGO_HOST = 'localhost'
 MONGO_PORT = 27017
 connect(MONGO_DATABASE_NAME, host=MONGO_HOST, port=MONGO_PORT)
 

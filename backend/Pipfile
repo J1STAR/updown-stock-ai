@@ -22,6 +22,7 @@ django-filter = "*"
 django-cors-headers = "*"
 mongoengine = "*"
 django-rest-framework-mongoengine = "*"
+dj-database-url = "*"
 
 [requires]
 python_version = "3.6"
