@@ -6,6 +6,12 @@ import numpy as np
 
 import tensorflow as tf
 
+from keras.models import Sequential
+from keras.layers import Dense, Dropout, Activation, Flatten,Reshape
+import keras.backend as K
+from keras.layers import LSTM
+
+
 from tensorflow.keras import layers
 
 tf.compat.v1.set_random_seed(777)
@@ -59,24 +65,49 @@ for page in range(1, 5):
     # print(df)
 df = df.dropna()
 
-df.drop(['날짜', '전일비'], axis=1, inplace=True)
+df.drop(['전일비'], axis=1, inplace=True)
+
+# df.set_index(['날짜'])
+df['날짜'] = pd.to_datetime(df['날짜'])
+# print(type(df['날짜']))
+
 
 dataset_temp = df.as_matrix()
+# print(type(dataset_temp[:, 1]))
+epoch_count = range(1, len(df['날짜'])+1)
+# print(len(df['날짜']))
+# print(len(df['종가']))
+# print(type(df['종가'][1]))
+df.set_index('날짜')
+plt.plot(dataset_temp[:, 0].tolist(), dataset_temp[:, 1].tolist(), "r--")
+plt.plot(dataset_temp[:, 0].tolist(), dataset_temp[:, 2].tolist(), "b-")
+plt.legend(["end price", "start price"])
 
 
-print(df)
+plt.show()
+# print(df)
 
 # 여기까지 주식 데이터 가져오는 부분
-
-# model = tf.keras.Sequential()
+#
+# model = Sequential()
 # # Add an Embedding layer expecting input vocab of size 1000, and
 # # output embedding dimension of size 64.
-# model.add(layers.Embedding(input_dim=1000, output_dim=64))
-#
+# model.add(layers.Embedding(input_dim=5, output_dim=10, hidden_dim=10))
 # # Add a LSTM layer with 128 internal units.
 # model.add(layers.LSTM(128))
 #
 # # Add a Dense layer with 10 units and softmax activation.
 # model.add(layers.Dense(10, activation='softmax'))
-#
+
+
+# Clear session
+# 현재의 TF graph를 버리고 새로 만든다. 예전 모델, 레이어와의 충돌을 피한다.
+K.clear_session()
+model = Sequential() # Sequential Model
+model.add(LSTM(20, input_shape=(12, 1)))  # (timestep, feature)
+model.add(Dense(1)) # output = 1
+model.compile(loss='mean_squared_error', optimizer='adam')
+
+# model.add(LSTM(units=units))
+
 # print(model.summary())
