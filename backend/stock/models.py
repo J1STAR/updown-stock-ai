@@ -9,6 +9,9 @@ class StockInfo(EmbeddedDocument):
     high_price = fields.IntField()
     low_price = fields.IntField()
     volumn = fields.IntField()
+    meta = {
+        'ordering': ['-date']
+    }
 
 
 class Corp(EmbeddedDocument):
@@ -18,4 +21,5 @@ class Corp(EmbeddedDocument):
 
 # Create your models here.
 class Stock(Document):
-    corp = fields.EmbeddedDocumentField(Corp, db_field="code")
+    code = fields.StringField()
+    corp = fields.EmbeddedDocumentField(Corp)

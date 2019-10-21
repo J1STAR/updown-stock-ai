@@ -11,8 +11,8 @@ from datetime import datetime
 # Create your views here.
 class StockView(APIView):
     def get(self, request):
+        print("STOCKLIST")
         serializer = StockSerializer(Stock.objects.all(), many=True)
-        print(serializer)
         response = {"stock": serializer.data}
         return Response(response, status=status.HTTP_200_OK)
 
@@ -34,8 +34,24 @@ class StockView(APIView):
             corp = Corp(corp_name=data['corp_name'])
             corp.stock_info.append(stock_info)
 
-            stock = Stock(corp=corp)
-            stock.save(data['code'])
+            stock = Stock(code=data['code'], corp=corp)
+            stock.save()
 
             response = serializer.data
             return Response(response, status=status.HTTP_200_OK)
+
+
+class StockDetailView(APIView):
+    def get(self, request, code=None):
+        print("STOCKDETAIL")
+        try:
+            stock_detail = Stock.objects.get(code=code)
+        except:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        serializer = StockSerializer(stock_detail)
+        response = serializer.data
+        return Response(response, status=status.HTTP_200_OK)
+
+    def post(self, request, code=None):
+        return Response(None, status=status.HTTP_200_OK)
