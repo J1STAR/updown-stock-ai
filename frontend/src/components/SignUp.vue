@@ -3,11 +3,13 @@
         <div> Sign Up</div>
         name : <input v-model="user.name" placeholder="name"> <br/>
         age : <input v-model="user.age" placeholder="ID"> <br/>
-        <button v-on:click="signUp">SignUp</button>
+        <button v-on:click="postUser(user.name, user.age)">SignUp</button>
     </div>
 </template>
 
 <script>
+    import MainRepository from '../vuex/MainRepository'
+
     export default {
         name: "SignUp",
         data() {
@@ -19,19 +21,8 @@
             };
         },
         methods: {
-            signUp() {
-                // this.$http.post('/api/login/signUp', {
-                //     user: this.user
-                // }).then((response) => {
-                //     if (response.data.result == 0) {
-                //         alert('Error, try again');
-                //     } else if (response.data.result == 1) {
-                //         alert('Success');
-                //         this.$router.push('login');
-                //     }
-                // }).catch(function (error) {
-                //     alert(error);
-                // })
+            postUser: function (name, age) {
+                MainRepository.postUser(name, age);
             }
         }
 

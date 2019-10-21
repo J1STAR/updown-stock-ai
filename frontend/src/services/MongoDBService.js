@@ -1,13 +1,14 @@
-import Api from './Api'
-
-const BASE_URL = 'api';
+import axios from 'axios';
 
 export default {
     getUsers: function () {
-        return Api(BASE_URL).get('/users')
-            .then(response => {
-                return response.data;
-                // eslint-disable-next-line no-console
-            }).catch(error => console.log(error));
+        return axios.get('api/users/')
+            .then(response => response.data.data)
+            .catch(error => console.log(error));
+    },
+    postUser: function (name, age) {
+        return axios.post('api/users/', {name: name, age: age})
+            .then(response => response.data.data)
+            .catch(error => console.log(error))
     }
 }

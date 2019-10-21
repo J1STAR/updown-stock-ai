@@ -9,5 +9,8 @@ export default {
     },
     getUsers: function () {
         return store.getters.getUsers;
+    },
+    postUser: async function(name, age) {
+        await MongoDBService.postUser(name, age);
     }
 }

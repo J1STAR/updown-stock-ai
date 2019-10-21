@@ -2,7 +2,7 @@
     <div class="background">
         <span>홈페이지</span>
         <br>
-        <v-flex v-for="user in getUsers" :key="user">
+        <v-flex v-for="user in getUsers" :key="user.id">
             <span>이름: {{user.name}}</span>
             <br>
             <span>나이: {{user.age}}</span>
@@ -16,12 +16,10 @@
 
     export default {
         name: "HomePage",
-        components: {
-
-        },
+        components: {},
         data() {
             return {
-                result: []
+
             }
         },
         mounted() {
@@ -29,11 +27,11 @@
             MainRepository.setUsers();
         },
         methods: {
-            getUsersMethod: function() {
-                this.$http.get('/api').then((res) => {
-                    console.log(res.data)
-                })
-            }
+            // getUsersMethod: function () {
+            //     this.$http.get('/api/users').then((res) => {
+            //         console.log(res.data)
+            //     })
+            // }
         },
         computed: {
             getUsers: function () {
