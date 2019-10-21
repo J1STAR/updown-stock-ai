@@ -96,9 +96,23 @@
 
 		},
 		methods: {
-			test: function() {
-				this.$http.get('/stocks')
-					.then((res) => {
+			test: function () {
+				this.$http.post('/stock/', {
+					"code": "005930",
+					"corp_name": "삼성전자",
+					"stock_info": [
+						{
+							"date": "2019.10.18",
+							"closing_price": 49900,
+							"diff": -600,
+							"open_price": 50300,
+							"high_price": 50900,
+							"low_price": 49650,
+							"volumn": 8483106
+						},
+					]
+				})
+				.then((res) => {
 					console.log(res)
 				})
 			}

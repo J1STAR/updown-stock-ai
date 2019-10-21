@@ -6,8 +6,8 @@ module.exports = {
   ],
   devServer: {
     proxy: {
-      "/stocks": {
-        target: "http://localhost:3000",
+      "/stock": {
+        target: "http://localhost:8000",
         changeOrigin: true
       }
     },
