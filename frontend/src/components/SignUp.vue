@@ -3,7 +3,7 @@
         <div> Sign Up</div>
         name : <input v-model="user.name" placeholder="name"> <br/>
         age : <input v-model="user.age" placeholder="ID"> <br/>
-        <button v-on:click="signUp">SignUp</button>
+        <button v-on:click="createUser">SignUp</button>
     </div>
 </template>
 
@@ -14,24 +14,13 @@
             return {
                 user: {
                     name: '',
-                    age: ' '
+                    age: 0
                 }
             };
         },
         methods: {
-            signUp() {
-                // this.$http.post('/api/login/signUp', {
-                //     user: this.user
-                // }).then((response) => {
-                //     if (response.data.result == 0) {
-                //         alert('Error, try again');
-                //     } else if (response.data.result == 1) {
-                //         alert('Success');
-                //         this.$router.push('login');
-                //     }
-                // }).catch(function (error) {
-                //     alert(error);
-                // })
+            createUser: function() {
+              this.$http.post('/api/', {name: this.user.name, age: this.user.age})
             }
         }
 
