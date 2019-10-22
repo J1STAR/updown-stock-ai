@@ -23,6 +23,8 @@ django-cors-headers = "*"
 mongoengine = "*"
 django-rest-framework-mongoengine = "*"
 dj-database-url = "*"
+beautifulsoup4 = "*"
+requests = "*"
 
 [requires]
 python_version = "3.6"
