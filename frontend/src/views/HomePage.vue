@@ -2,11 +2,20 @@
     <div class="background">
         <span>홈페이지</span>
         <br>
-        <v-flex v-for="user in getUsers" :key="user.id">
-            <span>이름: {{user.name}}</span>
+        <v-flex v-for="stock in getStocks" :key="stock.id">
+            <span>날짜: {{stock.date}}</span>
             <br>
-            <span>나이: {{user.age}}</span>
+            <span>시작가: {{stock.start_price}}</span>
             <br>
+            <span>종가: {{stock.end_price}}</span>
+            <br>
+            <span>고가: {{stock.high_price}}</span>
+            <br>
+            <span>저가: {{stock.low_price}}</span>
+            <br>
+            <span>거래량: {{stock.val}}</span>
+            <br>
+            <button v-on:click="deleteStock(stock)">삭제</button>
         </v-flex>
     </div>
 </template>
@@ -23,19 +32,16 @@
             }
         },
         mounted() {
-            // this.getUsersMethod();
-            MainRepository.setUsers();
+            MainRepository.setStocks();
         },
         methods: {
-            // getUsersMethod: function () {
-            //     this.$http.get('/api/users').then((res) => {
-            //         console.log(res.data)
-            //     })
-            // }
+            deleteStock: function (id) {
+                MainRepository.deleteStock(id);
+            }
         },
         computed: {
-            getUsers: function () {
-                return MainRepository.getUsers();
+            getStocks: function () {
+                return MainRepository.getStocks();
             }
         },
     }

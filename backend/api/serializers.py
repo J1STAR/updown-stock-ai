@@ -1,8 +1,8 @@
 from rest_framework_mongoengine import serializers
-from .models import User
+from .models import *
 
 
-class UserSerializer(serializers.DocumentSerializer):
+class StockSerializer(serializers.DocumentSerializer):
     class Meta:
-        model = User
-        fields = '__all__'
+        model = Stock
+        fields = ('pk', 'date', 'start_price', 'end_price', 'high_price', 'low_price', 'val')

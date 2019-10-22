@@ -1,9 +1,13 @@
 <template>
     <div id="SignUp">
         <div> Sign Up</div>
-        name : <input v-model="user.name" placeholder="name"> <br/>
-        age : <input v-model="user.age" placeholder="ID"> <br/>
-        <button v-on:click="postUser(user.name, user.age)">SignUp</button>
+        날짜: <input v-model="stock.date" placeholder="date"> <br/>
+        시작가 : <input v-model="stock.start_price" placeholder="start_price"> <br/>
+        고가: <input v-model="stock.high_price" placeholder="high_price"> <br/>
+        저가: <input v-model="stock.low_price" placeholder="low_price"> <br/>
+        종가: <input v-model="stock.end_price" placeholder="end_price"> <br/>
+        val: <input v-model="stock.val" placeholder="val"> <br/>
+        <button v-on:click="postStock(stock)">SignUp</button>
     </div>
 </template>
 
@@ -14,15 +18,19 @@
         name: "SignUp",
         data() {
             return {
-                user: {
-                    name: '',
-                    age: ' '
+                stock: {
+                    date: '',
+                    start_price: ' ',
+                    end_price: ' ',
+                    high_price: ' ',
+                    low_price: ' ',
+                    val: ' '
                 }
             };
         },
         methods: {
-            postUser: function (name, age) {
-                MainRepository.postUser(name, age);
+            postStock: function (stock) {
+                MainRepository.postStock(stock);
             }
         }
 

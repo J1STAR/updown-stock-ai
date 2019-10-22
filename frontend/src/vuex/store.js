@@ -1,28 +1,29 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 
-Vue.use(Vuex)
+Vue.use(Vuex);
 
 export default new Vuex.Store({
     state: {
-        users: [],
+        stocks: [],
     },
 
     getters: {
-        getUsers: state => {
-            return state.users;
+        getStocks: state => {
+            return state.stocks;
         }
     },
 
     mutations: {
-        setUsers(state, payload) {
-            state.users = payload;
+        setStocks(state, payload) {
+            console.log(payload);
+            state.stocks = payload;
         }
     },
 
     actions: {
-        setUsers({commit}, response) {
-            commit('setUsers', response);
+        setStocks({commit}, response) {
+            commit('setStocks', response);
         }
     }
 })

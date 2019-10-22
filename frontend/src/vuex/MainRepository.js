@@ -4,13 +4,16 @@ import store from './store'
 
 export default {
     // 회원
-    setUsers: async function () {
-        store.dispatch('setUsers', await MongoDBService.getUsers());
+    setStocks: async function () {
+        store.dispatch('setStocks', await MongoDBService.getStocks());
     },
-    getUsers: function () {
-        return store.getters.getUsers;
+    getStocks: function () {
+        return store.getters.getStocks;
     },
-    postUser: async function(name, age) {
-        await MongoDBService.postUser(name, age);
+    postStock: async function(name, age) {
+        await MongoDBService.postStock(name, age);
+    },
+    deleteStock: async function(stock){
+        await MongoDBService.deleteStock(stock);
     }
 }
