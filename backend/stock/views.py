@@ -32,8 +32,8 @@ class StockDetailView(APIView):
         return Response(response, status=status.HTTP_200_OK)
 
     def post(self, request, code=None):
+        print(request.data)
         data = request.data
-        print(dict(data))
 
         serializer = StockSerializer(data=data)
 

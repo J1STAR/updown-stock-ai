@@ -119,7 +119,7 @@
 						{
 							"date": "2019.09.26",
 							"closing_price": 55555,
-							"diff": -7899,
+							"diff": "-7899",
 							"open_price": 567868,
 							"high_price": 6786,
 							"low_price": 56783,

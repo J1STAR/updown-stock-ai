@@ -17,11 +17,11 @@ def preproces_str_to_int(str):
 
 
 if __name__ == '__main__':
-    # business_types = get_business_types()
+    business_types = get_business_types()
 
-    corparations = [{"name": "삼성전자", "corp_code": "005930"}]
-    # for business_type in business_types:
-    #     corparations += get_corparations(business_type['business_code'])
+    corparations = []
+    for business_type in business_types:
+        corparations += get_corparations(business_type['business_code'])
 
     for corp in corparations:
         res = requests.get("https://finance.naver.com/item/sise_day.nhn?code=" + corp['corp_code'])
@@ -42,6 +42,7 @@ if __name__ == '__main__':
                     row = tr.find_all('span')
                     if len(row) is not 0:
                         date = row[0].text
+                        print(date)
                         closing_price = preproces_str_to_int(row[1].text)
 
                         diff = preproces_str_to_int(row[2].text)
@@ -63,7 +64,7 @@ if __name__ == '__main__':
                                     "high_price": high_price,
                                     "low_price": low_price,
                                     "volumn": volumn
-                                }
+                                },
                             ]
                         }
-                        requests.post("http://localhost:8000/stock/" + corp['corp_code'] + "/", data=json.loads(json.dumps(data)))
+                        requests.post("http://localhost:8000/stock/" + corp['corp_code'] + "/", json=data)
