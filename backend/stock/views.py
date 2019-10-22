@@ -33,36 +33,29 @@ class StockDetailView(APIView):
 
     def post(self, request, code=None):
         data = request.data
+        print(dict(data))
+
         serializer = StockSerializer(data=data)
 
         stock_info = data['stock_info'][0]
         stock_info['date'] = datetime.strptime(stock_info['date'], '%Y.%m.%d')
 
         if serializer.is_valid():
+            stock_info_doc = StockInfo(date=stock_info['date'],
+                                       closing_price=stock_info['closing_price'],
+                                       diff=stock_info['diff'],
+                                       open_price=stock_info['open_price'],
+                                       high_price=stock_info['high_price'],
+                                       low_price=stock_info['low_price'],
+                                       volumn=stock_info['volumn']
+                                       )
+
             try:
                 stock = Stock.objects.get(code=code)
-                stock_info = StockInfo(date=stock_info['date'],
-                                       closing_price=stock_info['closing_price'],
-                                       diff=stock_info['diff'],
-                                       open_price=stock_info['open_price'],
-                                       high_price=stock_info['high_price'],
-                                       low_price=stock_info['low_price'],
-                                       volumn=stock_info['volumn']
-                                       )
-
-                stock.corp.stock_info.append(stock_info)
+                stock.corp.stock_info.append(stock_info_doc)
             except:
-                stock_info = StockInfo(date=stock_info['date'],
-                                       closing_price=stock_info['closing_price'],
-                                       diff=stock_info['diff'],
-                                       open_price=stock_info['open_price'],
-                                       high_price=stock_info['high_price'],
-                                       low_price=stock_info['low_price'],
-                                       volumn=stock_info['volumn']
-                                       )
-
                 corp = Corp(corp_name=data['corp_name'])
-                corp.stock_info.append(stock_info)
+                corp.stock_info.append(stock_info_doc)
 
                 stock = Stock(code=code, corp=corp)
             stock.save()

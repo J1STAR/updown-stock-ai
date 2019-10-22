@@ -117,8 +117,8 @@
 					"corp_name": "삼성전자",
 					"stock_info": [
 						{
-							"date": "2019.10.22",
-							"closing_price": 47800,
+							"date": "2019.09.26",
+							"closing_price": 55555,
 							"diff": -7899,
 							"open_price": 567868,
 							"high_price": 6786,
