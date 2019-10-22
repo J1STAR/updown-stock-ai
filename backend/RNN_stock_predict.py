@@ -84,8 +84,8 @@ plt.plot(dataset_temp[:, 0].tolist(), dataset_temp[:, 2].tolist(), "b-")
 plt.legend(["end price", "start price"])
 
 
-plt.show()
-# print(df)
+# plt.show()
+print(df)
 
 # 여기까지 주식 데이터 가져오는 부분
 #
