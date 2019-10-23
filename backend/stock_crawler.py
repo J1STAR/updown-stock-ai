@@ -31,7 +31,7 @@ def crawl_corp_stock_info(corp):
         last_pagenum = last_page_element[0].get("href").split("page=")[1]
     print("CODE: {} / NAME: {} / PAGE_NUM: {}".format(corp['corp_code'], corp['name'], last_pagenum))
 
-    for i in reversed(range(1, int(last_pagenum))):
+    for i in reversed(range(1, int(last_pagenum)+1)):
         page_res = requests.get("https://finance.naver.com/item/sise_day.nhn?code={}&page={}"
                                 .format(corp['corp_code'], i))
 
@@ -83,5 +83,5 @@ if __name__ == '__main__':
     crawl_processes = []
     print("Corp size > ", len(corparations))
 
-    pool = Pool(processes=32)
+    pool = Pool(processes=16)
     pool.map(crawl_corp_stock_info, corparations)
