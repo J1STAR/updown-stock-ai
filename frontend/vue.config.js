@@ -7,7 +7,7 @@ module.exports = {
   devServer: {
     proxy: {
       "/stock": {
-        target: "http://localhost:8000",
+        target: "http://j1star.ddns.net:8000",
         changeOrigin: true
       }
     },

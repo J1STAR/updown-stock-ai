@@ -31,7 +31,6 @@ const actions = {
 	},
 	loadCorparations: async function({commit}, businessCode) {
 		var res = await stockService.loadCorparations(businessCode)
-		console.log(res)
 		commit('setCorparations', res)
 	}
 }

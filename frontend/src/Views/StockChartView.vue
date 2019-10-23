@@ -73,12 +73,12 @@
 			<v-flex
 					xs8
 			>
-				<line-chart/>
+				<line-chart :chartData="chartData"/>
 			</v-flex>
 			<v-flex
 					xs2
 			>
-				<v-btn @click="test">test insert</v-btn>
+
 			</v-flex>
 		</v-layout>
 	</v-container>
@@ -102,6 +102,7 @@
 				corp: "",
 				corparations: [
 				],
+				chartData: []
 			};
 		},
 		async mounted() {
@@ -112,32 +113,23 @@
 			this.reloadCorparations()
 		},
 		methods: {
-			test: function () {
-				this.$http.post('/stock/005931/', {
-					"corp_name": "삼성전자",
-					"stock_info": [
-						{
-							"date": "2019.09.26",
-							"closing_price": 55555,
-							"diff": "-7899",
-							"open_price": 567868,
-							"high_price": 6786,
-							"low_price": 56783,
-							"volumn": 37435
-						},
-					]
-				})
-				.then((res) => {
-					console.log(res)
-				})
-			},
 			reloadCorparations: async function() {
 				await this.$store.dispatch('stock/loadCorparations', this.businessType.business_code)
 				this.corparations = this.$store.getters['stock/getCorparations']
 				this.corp = this.corparations[0]
-			},
-			reloadCorparationInfo: function() {
 
+				this.reloadCorparationInfo()
+			},
+			reloadCorparationInfo: async function() {
+				let res = await this.$http.get("/stock/"+ this.corp.corp_code)
+
+				let stock_info = res.data.corp.stock_info
+				let two_weeks_stock_list = stock_info.slice(-14)
+				this.chartData = [['Date', 'Closing Price']]
+
+				for(let row of two_weeks_stock_list.values()) {
+					this.chartData.push([row['date'].split('T')[0], row['closing_price']])
+				}
 			}
 		},
 		filters: {},
