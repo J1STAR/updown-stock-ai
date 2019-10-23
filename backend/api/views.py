@@ -9,7 +9,8 @@ from .serializers import *
 
 # Create your views here.
 
-@api_view(['GET', 'PUT', 'DELETE'])
+
+@api_view(['GET', 'POST'])
 def stock_list(request):
     if request.method == 'GET':
         data = []
@@ -36,9 +37,11 @@ def stock_list(request):
 
     elif request.method == 'POST':
         serializer = StockSerializer(data=request.data)
+
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
