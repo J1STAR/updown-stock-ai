@@ -15,5 +15,7 @@ module.exports = {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Headers': '*',
     },
+    disableHostCheck: true,
+    host: "0.0.0.0"
   }
 };
