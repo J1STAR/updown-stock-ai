@@ -32,32 +32,43 @@ class StockDetailView(APIView):
         return Response(response, status=status.HTTP_200_OK)
 
     def post(self, request, code=None):
-        print(request.data)
         data = request.data
 
-        serializer = StockSerializer(data=data)
+        serializer = None
+        if type(data) == dict:
+            serializer = StockSerializer(data=data)
 
-        stock_info = data['stock_info'][0]
-        stock_info['date'] = datetime.strptime(stock_info['date'], '%Y.%m.%d')
+            stock_info = data['stock_info'][0]
+            stock_info['date'] = datetime.strptime(stock_info['date'], '%Y.%m.%d')
 
-        if serializer.is_valid():
-            stock_info_doc = StockInfo(date=stock_info['date'],
-                                       closing_price=stock_info['closing_price'],
-                                       diff=stock_info['diff'],
-                                       open_price=stock_info['open_price'],
-                                       high_price=stock_info['high_price'],
-                                       low_price=stock_info['low_price'],
-                                       volumn=stock_info['volumn']
-                                       )
+            if serializer.is_valid():
+                stock_info_doc = StockInfo(**stock_info)
 
-            try:
-                stock = Stock.objects.get(code=code)
-                stock.corp.stock_info.append(stock_info_doc)
-            except:
-                corp = Corp(corp_name=data['corp_name'])
-                corp.stock_info.append(stock_info_doc)
+                try:
+                    stock = Stock.objects.get(code=code)
+                    stock.corp.stock_info.append(stock_info_doc)
+                except:
+                    corp = Corp(corp_name=data['corp_name'])
+                    corp.stock_info.append(stock_info_doc)
 
-                stock = Stock(code=code, corp=corp)
+                    stock = Stock(code=code, corp=corp)
+                stock.save()
+
+                response = serializer.data
+        elif type(data) == list:
+
+            corp = Corp(corp_name=data[0]['corp_name'])
+            for doc in data:
+                serializer = StockSerializer(data=doc)
+
+                stock_info = doc['stock_info'][0]
+                stock_info['date'] = datetime.strptime(stock_info['date'], '%Y.%m.%d')
+
+                if serializer.is_valid():
+                    stock_info_doc = StockInfo(**stock_info)
+
+                    corp.stock_info.append(stock_info_doc)
+            stock = Stock(code=code, corp=corp)
             stock.save()
 
             response = serializer.data
