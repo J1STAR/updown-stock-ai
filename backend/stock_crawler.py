@@ -30,7 +30,13 @@ if __name__ == '__main__':
 
         soup = BeautifulSoup(res.text, 'html.parser')
         last_page_element = soup.select('body > table.Nnavi > tr > td.pgRR > a')
-        last_pagenum = last_page_element[0].get("href").split("page=")[1]
+
+        last_pagenum = None
+        if len(last_page_element) == 0:
+            last_pagenum = 1
+        else:
+            last_pagenum = last_page_element[0].get("href").split("page=")[1]
+        print("CODE: {} / NAME: {} / PAGE_NUM: {}".format(corp['corp_code'], corp['name'], last_pagenum))
 
         for i in reversed(range(1, int(last_pagenum))):
             page_res = requests.get("https://finance.naver.com/item/sise_day.nhn?code={}&page={}"
@@ -70,5 +76,5 @@ if __name__ == '__main__':
                         }
                         stock_data_list.append(data)
 
-        print(stock_data_list)
+        # print(stock_data_list)
         requests.post("http://localhost:8000/stock/" + corp['corp_code'] + "/", json=stock_data_list)
