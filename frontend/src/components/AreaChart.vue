@@ -7,7 +7,7 @@
 			<v-flex xs12 text-center>
 				<template v-if="chartData.length != 0">
 					<GChart
-							type="LineChart"
+							type="AreaChart"
 							:data="chartData"
 							:options="chartOptions"
 							:events="chartEvents"
@@ -28,7 +28,7 @@
 
 <script>
 	export default {
-		name: "LineChart",
+		name: "AreaChart",
 		props: {
 			chartData: {
 				type: Array,
@@ -37,14 +37,17 @@
 		data() {
 			return {
 				chartOptions: {
+					backgroundColor: {
+						fill: "#FAFAFA"
+					},
 					chart: {
 						title: 'Company Performance',
 						subtitle: 'Sales, Expenses, and Profit: 2014-2017',
 					},
-					title: "일별 시세 차트",
-					titleTextStyle: {
-						fontSize: 64
-					},
+					// title: "일별 시세 차트",
+					// titleTextStyle: {
+					// 	fontSize: 64
+					// },
 					height: 600 - 24,
 					pointsVisible: true,
 					series: {

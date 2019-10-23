@@ -73,7 +73,7 @@
 			<v-flex
 					xs8
 			>
-				<line-chart :chartData="chartData"/>
+				<area-chart :chartData="chartData"/>
 			</v-flex>
 			<v-flex
 					xs2
@@ -85,7 +85,7 @@
 </template>
 
 <script>
-	import LineChart from "@/components/LineChart";
+	import AreaChart from "@/components/AreaChart";
 
 	export default {
 		name: "StockChartView",
@@ -133,7 +133,9 @@
 			}
 		},
 		filters: {},
-		components: {LineChart}
+		components: {
+			AreaChart
+		}
 	}
 </script>
 
