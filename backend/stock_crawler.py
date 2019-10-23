@@ -24,7 +24,6 @@ def crawl_corp_stock_info(corp):
     last_page_element = soup.select('body > table.Nnavi > tr > td.pgRR > a')
 
     last_pagenum = None
-    print("LP>", len(last_page_element))
     if len(last_page_element) == 0:
         last_pagenum = 1
     else:
