@@ -17,7 +17,7 @@ from keras.callbacks import EarlyStopping
 import requests
 
 if __name__ == '__main__':
-   res = requests.get("http://j1star.ddns.net:8000/stock/005930")
+   res = requests.get("http://j1star.ddns.net:8000/stock/067630")
    data = res.json()
    stock_info_list = data['corp']['stock_info']
    # date open high low close volumn
@@ -26,6 +26,7 @@ if __name__ == '__main__':
        pre_dataset = [stock_info['date'][:10], stock_info['open_price'], stock_info['high_price'], stock_info['low_price'], stock_info['closing_price'], stock_info['volumn']]
        pre_data_list.append(pre_dataset)
    df_stock_info = pd.DataFrame(pre_data_list, columns =['date', 'open', 'high', 'low', 'close', 'volumn'])
+   df_stock_info = df_stock_info[df_stock_info.open != 0]
    # print(df_stock_info)
 
 print(df_stock_info)

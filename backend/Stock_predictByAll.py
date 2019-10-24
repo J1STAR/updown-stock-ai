@@ -22,7 +22,7 @@ import requests
 tf.compat.v1.set_random_seed(777)
 
 if __name__ == '__main__':
-   res = requests.get("http://j1star.ddns.net:8000/stock/005930")
+   res = requests.get("http://j1star.ddns.net:8000/stock/067630")
    data = res.json()
    stock_info_list = data['corp']['stock_info']
    # date open high low close volumn
@@ -45,8 +45,8 @@ df_stock_info.set_index('date')
 #
 
 maxlength = len(df_stock_info)
-train = df_stock_info.loc[maxlength-240:maxlength-61, ['close']]
-test = df_stock_info.loc[maxlength-60:, ['close']]
+train = df_stock_info.loc[maxlength-240:maxlength-61, ['open', 'high', 'low', 'close', 'volumn']]
+test = df_stock_info.loc[maxlength-60:, ['open', 'high', 'low', 'close', 'volumn']]
 
 print(train)
 print(test)
@@ -73,28 +73,35 @@ sc = MinMaxScaler()
 train_sc = sc.fit_transform(train)
 test_sc = sc.transform(test)
 
-# print("train_sc")
-# print(train_sc)
+print("train_sc")
+print(train_sc)
 
-train_sc_df = pd.DataFrame(train_sc, columns=['종가'], index=train.index)
-test_sc_df = pd.DataFrame(test_sc, columns=['종가'], index=test.index)
+train_sc_df = pd.DataFrame(train_sc, columns=['시작가', '고가', '저가', '종가', '거래량'], index=train.index)
+test_sc_df = pd.DataFrame(test_sc, columns=['시작가', '고가', '저가', '종가', '거래량'], index=test.index)
 
 # print("train_sc_df")
 # print(train_sc_df)
 
 for s in range(1, sequence_length+1):
+    train_sc_df['{}일전 시작가'.format(s)] = train_sc_df['시작가'].shift(s)
+    train_sc_df['{}일전 고가'.format(s)] = train_sc_df['고가'].shift(s)
+    train_sc_df['{}일전 저가'.format(s)] = train_sc_df['저가'].shift(s)
     train_sc_df['{}일전 종가'.format(s)] = train_sc_df['종가'].shift(s)
+    train_sc_df['{}일전 거래량'.format(s)] = train_sc_df['거래량'].shift(s)
+    test_sc_df['{}일전 시작가'.format(s)] = test_sc_df['시작가'].shift(s)
+    test_sc_df['{}일전 고가'.format(s)] = test_sc_df['고가'].shift(s)
+    test_sc_df['{}일전 저가'.format(s)] = test_sc_df['저가'].shift(s)
     test_sc_df['{}일전 종가'.format(s)] = test_sc_df['종가'].shift(s)
+    test_sc_df['{}일전 거래량'.format(s)] = test_sc_df['거래량'].shift(s)
 
-print(train_sc_df)
 
-X_train = train_sc_df.dropna().drop('종가', axis=1)
+X_train = train_sc_df.dropna().drop(['시작가', '고가', '저가', '종가', '거래량'], axis=1)
 Y_train = train_sc_df.dropna()[['종가']]
 # dropna()가 none이 포함되어있는 부분을 제외해버리기때문에 앞의 몇일이 짤린다.
 print(X_train)
 # print(Y_train)
 
-X_test = test_sc_df.dropna().drop('종가', axis=1)
+X_test = test_sc_df.dropna().drop(['시작가', '고가', '저가', '종가', '거래량'], axis=1)
 Y_test = test_sc_df.dropna()[['종가']]
 
 # print(X_train)
@@ -109,12 +116,12 @@ Y_train = Y_train.values
 # print(Y_train)
 Y_test = Y_test.values
 
-X_train_t = X_train.reshape(X_train.shape[0], sequence_length, 1)
-X_test_t = X_test.reshape(X_test.shape[0], sequence_length, 1)
+X_train_t = X_train.reshape(X_train.shape[0], sequence_length*5, 1)
+X_test_t = X_test.reshape(X_test.shape[0], sequence_length*5, 1)
 
-# print("최종 DATA")
-# print(type(X_train_t))
-# print(X_train_t)
+print("최종 DATA")
+print(type(X_train_t))
+print(X_train_t)
 
 
 # LSTM 모델 만들기
@@ -123,19 +130,16 @@ X_test_t = X_test.reshape(X_test.shape[0], sequence_length, 1)
 K.clear_session()
 
 model = Sequential() # Sequential Model
-model.add(LSTM(40, input_shape=(sequence_length, 1)))# (timestep, feature)
-# model.add(Dense(100))
-# model.add(Dense(100))
-# model.add(Dropout(0.3))
+model.add(LSTM(32, input_shape=(sequence_length*5, 1)))# (timestep, feature)
 model.add(Dense(1)) # output = 1
 model.compile(loss='mean_squared_error', optimizer='adam')
 
 # loss를 모니터링해서 patience만큼 연속으로 loss률이 떨어지지 않으면 훈련을 멈춘다.
-early_stop = EarlyStopping(monitor='loss', patience=10, verbose=1)
+early_stop = EarlyStopping(monitor='loss', patience=30, verbose=1)
 
 # history=model.fit(X_train_t, Y_train, epochs=100, batch_size=30, verbose=1, callbacks=[early_stop])
 
-history = model.fit(X_train_t, Y_train, epochs=200, verbose=2, batch_size=20, validation_data=(X_test_t, Y_test), callbacks=[early_stop])
+history = model.fit(X_train_t, Y_train, epochs=200, verbose=2, batch_size=32, validation_data=(X_test_t, Y_test), callbacks=[early_stop])
 
 # Y_pred = model.predict(X_test_t)
 
@@ -186,7 +190,6 @@ Y_pred = model.predict(X_test_t)
 #
 # plt.legend(["Y_test", "Y_pred"])
 
-
 print(Y_test)
 print(Y_pred)
 
@@ -207,8 +210,7 @@ for val in range(1, len(Y_test)):
     if test_val == pred_val:
         count+=1
 
-print("count = ", count)
-print("총 개수 = ", len(Y_test))
+
 print("정답률 : ", count/len(Y_test))
 
 

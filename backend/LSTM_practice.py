@@ -224,11 +224,11 @@ model.add(Dense(1)) # output = 1
 model.compile(loss='mean_squared_error', optimizer='adam')
 
 # loss를 모니터링해서 patience만큼 연속으로 loss률이 떨어지지 않으면 훈련을 멈춘다.
-early_stop = EarlyStopping(monitor='loss', patience=7, verbose=1)
+early_stop = EarlyStopping(monitor='loss', patience=8, verbose=1)
 
 # history=model.fit(X_train_t, Y_train, epochs=100, batch_size=30, verbose=1, callbacks=[early_stop])
 
-history = model.fit(X_train_t, Y_train, epochs=1000, verbose=1, batch_size=28, validation_data=(X_test_t, Y_test), callbacks=[early_stop])
+history = model.fit(X_train_t, Y_train, epochs=1000, verbose=2, batch_size=10, validation_data=(X_test_t, Y_test), callbacks=[early_stop])
 
 # Y_pred = model.predict(X_test_t)
 
