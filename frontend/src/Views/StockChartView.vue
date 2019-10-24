@@ -16,7 +16,6 @@
 				<v-autocomplete
 						label="종목"
 						v-model="corp"
-						@change="reloadCorparationInfo"
 						item-text="name"
 						:items="corparations"
 						return-object
@@ -36,10 +35,11 @@
 								label="StartDate"
 								prepend-icon="mdi-calendar"
 								readonly
+								@keydown="test"
 								v-on="on"
 						></v-text-field>
 					</template>
-					<v-date-picker v-model="date1" no-title scrollable>
+					<v-date-picker v-model="date1" @change="reloadCorparationInfo" no-title scrollable>
 						<v-spacer></v-spacer>
 						<v-btn text color="primary" @click="menu1 = false">Cancel</v-btn>
 						<v-btn text color="primary" @click="$refs.menu1.save(date1)">OK</v-btn>
@@ -63,7 +63,7 @@
 								v-on="on"
 						></v-text-field>
 					</template>
-					<v-date-picker v-model="date2" no-title scrollable>
+					<v-date-picker v-model="date2" @change="reloadCorparationInfo" no-title scrollable>
 						<v-spacer></v-spacer>
 						<v-btn text color="primary" @click="menu2 = false">Cancel</v-btn>
 						<v-btn text color="primary" @click="$refs.menu2.save(date2)">OK</v-btn>
@@ -93,7 +93,7 @@
 		data() {
 			return {
 				menu1: false,
-				date1: new Date('2019-10-04').toISOString().substr(0, 10),
+				date1: new Date().toISOString().substr(0, 10),
 				menu2: false,
 				date2: new Date().toISOString().substr(0, 10),
 				businessType: "",
@@ -111,8 +111,15 @@
 			this.businessType = this.businessTypes[0]
 
 			this.reloadCorparations()
+
+			let startDate = new Date()
+			startDate.setDate(startDate.getDate() - 30)
+			this.date1 = startDate.toISOString().substr(0, 10)
 		},
 		methods: {
+			test: function() {
+				console.log("test")
+			},
 			reloadCorparations: async function() {
 				await this.$store.dispatch('stock/loadCorparations', this.businessType.business_code)
 				this.corparations = this.$store.getters['stock/getCorparations']
@@ -124,11 +131,22 @@
 				let res = await this.$http.get("/stock/"+ this.corp.corp_code)
 
 				let stock_info = res.data.corp.stock_info
-				let two_weeks_stock_list = stock_info.slice(-14)
 				this.chartData = [['Date', 'Closing Price']]
 
-				for(let row of two_weeks_stock_list.values()) {
-					this.chartData.push([row['date'].split('T')[0], row['closing_price']])
+				if(this.date1 >= this.date2) {
+					this.date2 = this.date1
+				}
+
+				for(let row of stock_info) {
+					let startDate = new Date(this.date1)
+					let currentDate = new Date(row['date'].substr(0, 10))
+					let endDate = new Date(this.date2)
+					if(startDate <= currentDate && currentDate <= endDate) {
+						console.log("SD"+startDate)
+						console.log("C"+currentDate)
+						console.log("ED"+endDate)
+						this.chartData.push([row['date'].split('T')[0], row['closing_price']])
+					}
 				}
 			}
 		},
