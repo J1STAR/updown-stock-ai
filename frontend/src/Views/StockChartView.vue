@@ -16,6 +16,7 @@
 				<v-autocomplete
 						label="종목"
 						v-model="corp"
+						@change="reloadCorparationInfo"
 						item-text="name"
 						:items="corparations"
 						return-object
@@ -142,9 +143,6 @@
 					let currentDate = new Date(row['date'].substr(0, 10))
 					let endDate = new Date(this.date2)
 					if(startDate <= currentDate && currentDate <= endDate) {
-						console.log("SD"+startDate)
-						console.log("C"+currentDate)
-						console.log("ED"+endDate)
 						this.chartData.push([row['date'].split('T')[0], row['closing_price']])
 					}
 				}
