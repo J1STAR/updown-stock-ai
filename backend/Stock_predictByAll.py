@@ -18,11 +18,16 @@ import keras.backend.tensorflow_backend as K
 from keras.callbacks import EarlyStopping
 
 import requests
-
+# 3037 -0.066452  0.001087 -0.081858  0.009698  0.377315 -0.087889 -0.080435
 tf.compat.v1.set_random_seed(777)
 
+# pd.set_option('display.max_rows', 1000)
+pd.set_option('display.max_columns', 1000)
+
+pd.set_option('display.max_colwidth', -1)
+
 if __name__ == '__main__':
-   res = requests.get("http://j1star.ddns.net:8000/stock/067630")
+   res = requests.get("http://j1star.ddns.net:8000/stock/078340")
    data = res.json()
    stock_info_list = data['corp']['stock_info']
    # date open high low close volumn
@@ -45,11 +50,12 @@ df_stock_info.set_index('date')
 #
 
 maxlength = len(df_stock_info)
-train = df_stock_info.loc[maxlength-240:maxlength-61, ['open', 'high', 'low', 'close', 'volumn']]
-test = df_stock_info.loc[maxlength-60:, ['open', 'high', 'low', 'close', 'volumn']]
+train = df_stock_info.loc[maxlength-480:maxlength-121, ['open', 'high', 'low', 'close', 'volumn']]
+test = df_stock_info.loc[maxlength-120:, ['open', 'high', 'low', 'close', 'volumn']]
 
-print(train)
-print(test)
+
+# print(train)
+# print(test)
 
 
 
@@ -82,6 +88,8 @@ test_sc_df = pd.DataFrame(test_sc, columns=['시작가', '고가', '저가', '�
 # print("train_sc_df")
 # print(train_sc_df)
 
+
+
 for s in range(1, sequence_length+1):
     train_sc_df['{}일전 시작가'.format(s)] = train_sc_df['시작가'].shift(s)
     train_sc_df['{}일전 고가'.format(s)] = train_sc_df['고가'].shift(s)
@@ -98,11 +106,26 @@ for s in range(1, sequence_length+1):
 X_train = train_sc_df.dropna().drop(['시작가', '고가', '저가', '종가', '거래량'], axis=1)
 Y_train = train_sc_df.dropna()[['종가']]
 # dropna()가 none이 포함되어있는 부분을 제외해버리기때문에 앞의 몇일이 짤린다.
-print(X_train)
+
+
 # print(Y_train)
+
+today = test_sc_df.dropna().drop(['5일전 시작가', '5일전 고가', '5일전 저가', '5일전 종가', '5일전 거래량'], axis=1)
+# today = today[-1]
+today = today.values
+today = today[-1]
+
+today = today.reshape(1, sequence_length*5, 1)
+print("today")
+print(today)
+
+
 
 X_test = test_sc_df.dropna().drop(['시작가', '고가', '저가', '종가', '거래량'], axis=1)
 Y_test = test_sc_df.dropna()[['종가']]
+
+print("X_test")
+print(X_test)
 
 # print(X_train)
 
@@ -130,16 +153,16 @@ print(X_train_t)
 K.clear_session()
 
 model = Sequential() # Sequential Model
-model.add(LSTM(32, input_shape=(sequence_length*5, 1)))# (timestep, feature)
+model.add(LSTM(40, input_shape=(sequence_length*5, 1)))# (timestep, feature)
 model.add(Dense(1)) # output = 1
 model.compile(loss='mean_squared_error', optimizer='adam')
 
 # loss를 모니터링해서 patience만큼 연속으로 loss률이 떨어지지 않으면 훈련을 멈춘다.
-early_stop = EarlyStopping(monitor='loss', patience=30, verbose=1)
+early_stop = EarlyStopping(monitor='loss', patience=20, verbose=1)
 
 # history=model.fit(X_train_t, Y_train, epochs=100, batch_size=30, verbose=1, callbacks=[early_stop])
 
-history = model.fit(X_train_t, Y_train, epochs=200, verbose=2, batch_size=32, validation_data=(X_test_t, Y_test), callbacks=[early_stop])
+history = model.fit(X_train_t, Y_train, epochs=1000, verbose=2, batch_size=32, validation_data=(X_test_t, Y_test), callbacks=[early_stop])
 
 # Y_pred = model.predict(X_test_t)
 
@@ -182,6 +205,11 @@ plt.plot(count, Y_pred, "b-")
 plt.legend(["Y_test", "Y_pred_by_close"])
 
 Y_pred = model.predict(X_test_t)
+
+yesterday = model.predict(today)
+
+print(Y_test[-1])
+print(yesterday)
 
 # plt.figure(4)
 #

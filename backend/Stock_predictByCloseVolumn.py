@@ -22,7 +22,7 @@ import requests
 tf.compat.v1.set_random_seed(777)
 
 if __name__ == '__main__':
-   res = requests.get("http://j1star.ddns.net:8000/stock/067630")
+   res = requests.get("http://j1star.ddns.net:8000/stock/043200")
    data = res.json()
    stock_info_list = data['corp']['stock_info']
    # date open high low close volumn
@@ -125,15 +125,16 @@ K.clear_session()
 
 model = Sequential() # Sequential Model
 model.add(LSTM(32, input_shape=(sequence_length*2, 1)))# (timestep, feature)
+model.add(Dropout(0.5))
 model.add(Dense(1)) # output = 1
 model.compile(loss='mean_squared_error', optimizer='adam')
 
 # loss를 모니터링해서 patience만큼 연속으로 loss률이 떨어지지 않으면 훈련을 멈춘다.
-early_stop = EarlyStopping(monitor='loss', patience=30, verbose=1)
+# early_stop = EarlyStopping(monitor='loss', patience=30, verbose=1)
 
 # history=model.fit(X_train_t, Y_train, epochs=100, batch_size=30, verbose=1, callbacks=[early_stop])
 
-history = model.fit(X_train_t, Y_train, epochs=1000, verbose=2, batch_size=32, validation_data=(X_test_t, Y_test), callbacks=[early_stop])
+history = model.fit(X_train_t, Y_train, epochs=1000, verbose=2, batch_size=32, validation_data=(X_test_t, Y_test))
 
 # Y_pred = model.predict(X_test_t)
 
@@ -184,6 +185,26 @@ Y_pred = model.predict(X_test_t)
 #
 # plt.legend(["Y_test", "Y_pred"])
 
+count = 0
+for val in range(1, len(Y_test)):
+    test_val = Y_test[val]-Y_test[val-1]
+    pred_val = Y_pred[val]-Y_test[val-1]
+
+    if test_val > 0:
+        test_val = 1
+    else:
+        test_val = -1
+    if pred_val > 0:
+        pred_val = 1
+    else:
+        pred_val = -1
+
+    if test_val == pred_val:
+        count+=1
+
+print("count = ", count)
+print("총 개수 = ", len(Y_test))
+print("정답률 : ", count/len(Y_test))
 
 
 plt.show()
