@@ -74,7 +74,7 @@
 			<v-flex
 					xs8
 			>
-				<area-chart :chartData="chartData"/>
+				<candle-chart :chartData="chartData" :isActive="status" :title="corp.name"/>
 			</v-flex>
 			<v-flex
 					xs2
@@ -86,13 +86,14 @@
 </template>
 
 <script>
-	import AreaChart from "@/components/AreaChart";
+	import CandleChart from "@/components/CandleChart";
 
 	export default {
 		name: "StockChartView",
 		props: {},
 		data() {
 			return {
+				status: false,
 				menu1: false,
 				date1: new Date().toISOString().substr(0, 10),
 				menu2: false,
@@ -103,7 +104,7 @@
 				corp: "",
 				corparations: [
 				],
-				chartData: []
+				chartData: [],
 			};
 		},
 		async mounted() {
@@ -129,28 +130,32 @@
 				this.reloadCorparationInfo()
 			},
 			reloadCorparationInfo: async function() {
+				this.status = false
+
 				let res = await this.$http.get("/stock/"+ this.corp.corp_code)
 
 				let stock_info = res.data.corp.stock_info
-				this.chartData = [['Date', 'Closing Price']]
 
 				if(this.date1 >= this.date2) {
 					this.date2 = this.date1
 				}
 
+				this.chartData = []
 				for(let row of stock_info) {
 					let startDate = new Date(this.date1)
 					let currentDate = new Date(row['date'].substr(0, 10))
 					let endDate = new Date(this.date2)
 					if(startDate <= currentDate && currentDate <= endDate) {
-						this.chartData.push([row['date'].split('T')[0], row['closing_price']])
+						this.chartData.push([currentDate.getTime(), row['open_price'], row['high_price'], row['low_price'], row['closing_price'], row['volumn']])
 					}
 				}
+
+				this.status = true
 			}
 		},
 		filters: {},
 		components: {
-			AreaChart
+			CandleChart
 		}
 	}
 </script>

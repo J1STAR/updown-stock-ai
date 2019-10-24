@@ -629,7 +629,7 @@
     core-js "^2.6.5"
     regenerator-runtime "^0.13.2"
 
-"@babel/runtime@^7.0.0":
+"@babel/runtime@^7.0.0", "@babel/runtime@^7.5.5":
   version "7.6.3"
   resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.6.3.tgz#935122c74c73d2240cafd32ddb5fc2a6cd35cf1f"
   integrity sha512-kq6anf9JGjW8Nt5rYfEuGRaEAaH1mkv3Bbu6rYvLOpPh/RusSJXuKPEAoZ7L7gybZkchE8+NV5g9vKF4AGAtsA==
@@ -1360,6 +1360,11 @@ array-unique@^0.3.2:
   version "0.3.2"
   resolved "https://registry.yarnpkg.com/array-unique/-/array-unique-0.3.2.tgz#a894b75d4bc4f6cd679ef3244a9fd8f46ae2d428"
   integrity sha1-qJS3XUvE9s1nnvMkSp/Y9Gri1Cg=
+
+arrayslicer@^1.2.3:
+  version "1.2.3"
+  resolved "https://registry.yarnpkg.com/arrayslicer/-/arrayslicer-1.2.3.tgz#21a4903102a9aba7d8a73c44bf57f3e28c560136"
+  integrity sha1-IaSQMQKpq6fYpzxEv1fz4oxWATY=
 
 asn1.js@^4.0.0:
   version "4.10.1"
@@ -2600,11 +2605,6 @@ de-indent@^1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/de-indent/-/de-indent-1.0.2.tgz#b2038e846dc33baa5796128d0804b455b8c1e21d"
   integrity sha1-sgOOhG3DO6pXlhKNCAS0VbjB4h0=
-
-debounce@^1.1.0:
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/debounce/-/debounce-1.2.0.tgz#44a540abc0ea9943018dc0eaa95cce87f65cd131"
-  integrity sha512-mYtLl1xfZLi1m4RtQYlZgJUNQjl4ZxVnHzIR8nLLgi4q1YT8o/WM+MK/f8yfcc9s5Ir5zRaPZyZU6xs1Syoocg==
 
 debug@2.6.9, debug@^2.2.0, debug@^2.3.3:
   version "2.6.9"
@@ -3890,6 +3890,16 @@ gzip-size@^5.0.0:
   dependencies:
     duplexer "^0.1.1"
     pify "^4.0.1"
+
+hammerjs@^2.0.8:
+  version "2.0.8"
+  resolved "https://registry.yarnpkg.com/hammerjs/-/hammerjs-2.0.8.tgz#04ef77862cff2bb79d30f7692095930222bf60f1"
+  integrity sha1-BO93hiz/K7edMPdpIJWTAiK/YPE=
+
+hamsterjs@^1.1.3:
+  version "1.1.3"
+  resolved "https://registry.yarnpkg.com/hamsterjs/-/hamsterjs-1.1.3.tgz#4adc6b9100a3fcc7c65fc391debb249901a50df6"
+  integrity sha512-q4XBr7hnxx1WyZA8mpVDuZVa1YXaR0WZaFSBxnj8hUXltuqXJOt5yuWYkAbMXsj+q0REDUO990+/TuxEadXFyg==
 
 handle-thing@^2.0.0:
   version "2.0.0"
@@ -5275,6 +5285,11 @@ mkdirp@0.5.1, mkdirp@0.5.x, mkdirp@^0.5.0, mkdirp@^0.5.1, mkdirp@~0.5.1:
   integrity sha1-MAV0OOrGz3+MR2fzhkjWaX11yQM=
   dependencies:
     minimist "0.0.8"
+
+moment@^2.24.0:
+  version "2.24.0"
+  resolved "https://registry.yarnpkg.com/moment/-/moment-2.24.0.tgz#0d055d53f5052aa653c9f6eb68bb5d12bf5c2b5b"
+  integrity sha512-bV7f+6l2QigeBBZSM/6yTNq4P2fNpSWj/0e7jQcy87A8e7o2nAfP/34/2ky5Vw4B9S446EtIhodAzkFCcR4dQg==
 
 move-concurrently@^1.0.1:
   version "1.0.1"
@@ -7836,6 +7851,18 @@ tough-cookie@~2.4.3:
     psl "^1.1.24"
     punycode "^1.4.1"
 
+trading-vue-js@^0.3.12:
+  version "0.3.12"
+  resolved "https://registry.yarnpkg.com/trading-vue-js/-/trading-vue-js-0.3.12.tgz#0957cc9347311d157906f5dd528e99722fa0b462"
+  integrity sha512-S2LiNyAyMLcVhiq2T8Y4vb2oGpX6KLN2SSIT6wk4nne+BgSnH9ovd5jPAxG6R9av8rDKjcEaNGS4Xt5DQ+Kl5A==
+  dependencies:
+    "@babel/runtime" "^7.5.5"
+    arrayslicer "^1.2.3"
+    hammerjs "^2.0.8"
+    hamsterjs "^1.1.3"
+    moment "^2.24.0"
+    vue "^2.6.10"
+
 tryer@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/tryer/-/tryer-1.0.1.tgz#f2c85406800b9b0f74c9f7465b81eaad241252f8"
@@ -8132,13 +8159,6 @@ vue-eslint-parser@^5.0.0:
     espree "^4.1.0"
     esquery "^1.0.1"
     lodash "^4.17.11"
-
-vue-google-charts@^0.3.2:
-  version "0.3.2"
-  resolved "https://registry.yarnpkg.com/vue-google-charts/-/vue-google-charts-0.3.2.tgz#fd78c9487c25327da27e0613d78c9d9724ac4c21"
-  integrity sha512-pyNLJvjY1ZTAI91ppqGth9YaA7TA7wuotn33f7PIYkwJ4jmUbm2ZBSEkc2QaGKv8jLHkTg+gYDOmvWDTc9pAvQ==
-  dependencies:
-    debounce "^1.1.0"
 
 vue-hot-reload-api@^2.3.0:
   version "2.3.4"
