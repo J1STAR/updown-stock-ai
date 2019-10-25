@@ -12,16 +12,22 @@ import requests
 
 # Create your views here.
 class StockView(APIView):
-    def get(self, request):
-        print("STOCKLIST")
-        serializer = StockSerializer(Stock.objects.all(), many=True)
-        response = {"stock": serializer.data}
+    def get(self, request, page=None):
+        if page is None:
+            serializer = StockSerializer(Stock.objects.all(), many=True)
+            response = {"stock": serializer.data}
+        else:
+            items_per_page = 20
+
+            offset = (int(page) - 1) * items_per_page
+
+            serializer = StockSerializer(Stock.objects.skip(offset).limit(items_per_page), many=True)
+            response = {"stock": serializer.data}
         return Response(response, status=status.HTTP_200_OK)
 
 
 class StockDetailView(APIView):
     def get(self, request, code=None):
-        print("STOCKDETAIL")
         try:
             stock_detail = Stock.objects.get(code=code)
         except:
@@ -56,7 +62,6 @@ class StockDetailView(APIView):
 
                 response = serializer.data
         elif type(data) == list:
-
             corp = Corp(corp_name=data[0]['corp_name'])
             for doc in data:
                 serializer = StockSerializer(data=doc)
@@ -73,7 +78,7 @@ class StockDetailView(APIView):
 
             response = serializer.data
 
-        return Response(response, status=status.HTTP_200_OK)
+        return Response(None, status=status.HTTP_200_OK)
 
 
 class StockBusinessView(APIView):

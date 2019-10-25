@@ -132,7 +132,7 @@
 			reloadCorparationInfo: async function() {
 				this.status = false
 
-				let res = await this.$http.get("/stock/"+ this.corp.corp_code)
+				let res = await this.$http.get("/stock/corp/"+ this.corp.corp_code)
 
 				let stock_info = res.data.corp.stock_info
 

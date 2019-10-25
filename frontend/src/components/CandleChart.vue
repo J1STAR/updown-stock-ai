@@ -8,7 +8,7 @@
         >
             <v-flex xs12 text-center>
                 <template v-if="isActive">
-                    <trading-vue :data="chart"
+                    <trading-vue ref="tradingVue" :data="chart"
                                  :title-txt="title"
                                  :width="width"
                                  :height="height"
@@ -70,9 +70,14 @@
                 this.chart.ohlcv = newVal
                 this.width = document.querySelector('#chartLayout').offsetWidth
                 this.height = document.querySelector('#chartLayout').offsetHeight
+
+                this.$nextTick(() =>
+                    this.$refs.tradingVue.setRange(this.chart.ohlcv[0][0], this.chart.ohlcv[this.chart.ohlcv.length - 1][0])
+                )
             }
         },
         mounted() {
+
         },
         methods: {},
         filters: {},
