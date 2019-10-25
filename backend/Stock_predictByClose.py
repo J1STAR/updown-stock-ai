@@ -16,13 +16,15 @@ from keras.layers import Dense
 from keras.layers import Dropout
 import keras.backend.tensorflow_backend as K
 from keras.callbacks import EarlyStopping
+from keras.callbacks import ModelCheckpoint
+from keras.models import load_model
 
 import requests
 
 tf.compat.v1.set_random_seed(777)
 
 if __name__ == '__main__':
-   res = requests.get("http://j1star.ddns.net:8000/stock/005930")
+   res = requests.get("http://j1star.ddns.net:8000/stock/corp/067280")
    data = res.json()
    stock_info_list = data['corp']['stock_info']
    # date open high low close volumn
@@ -45,8 +47,8 @@ df_stock_info.set_index('date')
 #
 
 maxlength = len(df_stock_info)
-train = df_stock_info.loc[maxlength-240:maxlength-61, ['close']]
-test = df_stock_info.loc[maxlength-60:, ['close']]
+train = df_stock_info.loc[maxlength-960:maxlength-241, ['close']]
+test = df_stock_info.loc[maxlength-245:, ['close']]
 
 print(train)
 print(test)
@@ -123,19 +125,19 @@ X_test_t = X_test.reshape(X_test.shape[0], sequence_length, 1)
 K.clear_session()
 
 model = Sequential() # Sequential Model
-model.add(LSTM(40, input_shape=(sequence_length, 1)))# (timestep, feature)
+model.add(LSTM(20, input_shape=(sequence_length, 1)))# (timestep, feature)
 # model.add(Dense(100))
 # model.add(Dense(100))
-# model.add(Dropout(0.3))
+# model.add(Dropout(0.1))
 model.add(Dense(1)) # output = 1
 model.compile(loss='mean_squared_error', optimizer='adam')
 
 # loss를 모니터링해서 patience만큼 연속으로 loss률이 떨어지지 않으면 훈련을 멈춘다.
-early_stop = EarlyStopping(monitor='loss', patience=10, verbose=1)
+early_stop = [EarlyStopping(monitor='val_loss', patience=50, verbose=1), ModelCheckpoint(filepath='best_model_close', monitor='val_loss', save_best_only=True)]
 
 # history=model.fit(X_train_t, Y_train, epochs=100, batch_size=30, verbose=1, callbacks=[early_stop])
 
-history = model.fit(X_train_t, Y_train, epochs=200, verbose=2, batch_size=20, validation_data=(X_test_t, Y_test), callbacks=[early_stop])
+history = model.fit(X_train_t, Y_train, epochs=1000, verbose=2, batch_size=5, validation_data=(X_test_t, Y_test), callbacks=early_stop)
 
 # Y_pred = model.predict(X_test_t)
 
@@ -166,6 +168,10 @@ plt.ylabel("Loss Score")
 
 Y_pred = model.predict(X_test_t)
 
+best_model = load_model('best_model_close')
+
+Y_pred_best = best_model.predict(X_test_t)
+
 
 plt.figure(3)
 
@@ -179,22 +185,39 @@ plt.legend(["Y_test", "Y_pred_by_close"])
 
 Y_pred = model.predict(X_test_t)
 
-# plt.figure(4)
+plt.figure(4)
 #
-# plt.plot(count, Y_test, "r--")
-# plt.plot(count, Y_pred, "b-")
+# c = range(1, len(Y_train)+1)
+# count= range(len(Y_train)+1, len(Y_train)+len(Y_pred)+1)
+# ax = plt.plot(c, Y_train)
+# plt.plot(count, Y_test)
+# plt.plot(count, Y_pred_best)
+count= range(1, len(Y_pred)+1)
+plt.plot(count, Y_test)
+plt.plot(count, Y_pred_best)
 #
-# plt.legend(["Y_test", "Y_pred"])
+plt.legend(["Y_test", "Y_pred_best"])
+
+plt.figure(5)
+
+c = range(1, len(Y_train)+1)
+count= range(len(Y_train)+1, len(Y_train)+len(Y_pred)+1)
+ax = plt.plot(c, Y_train)
+plt.plot(count, Y_test)
+plt.plot(count, Y_pred_best)
+
+plt.legend(["Y_train", "Y_test", "Y_pred_best"])
 
 
-print(Y_test)
-print(Y_pred)
+# print(Y_test)
+# print(Y_pred)
 
 count = 0
+best_count = 0
 for val in range(1, len(Y_test)):
     test_val = Y_test[val]-Y_test[val-1]
     pred_val = Y_pred[val]-Y_test[val-1]
-
+    pred_best_val = Y_pred_best[val]-Y_test[val-1]
     if test_val > 0:
         test_val = 1
     else:
@@ -203,13 +226,19 @@ for val in range(1, len(Y_test)):
         pred_val = 1
     else:
         pred_val = -1
+    if pred_best_val > 0:
+        pred_best_val = 1
+    else:
+        pred_best_val = -1
+    if test_val == pred_best_val:
+        best_count+=1
 
     if test_val == pred_val:
         count+=1
 
 print("count = ", count)
 print("총 개수 = ", len(Y_test))
-print("정답률 : ", count/len(Y_test))
-
+print("모델 정답률 : ", count/len(Y_test))
+print("베스트 모델 정답률 : ", best_count/len(Y_test))
 
 plt.show()
