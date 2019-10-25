@@ -16,7 +16,10 @@
                                  :color-grid="colors.colorGrid"
                                  :color-text="colors.colorText"
                                  :color-candle-up="colors.colorCandleUp"
-                                 :color-candle-dw="colors.colorCandleDw">
+                                 :color-candle-dw="colors.colorCandleDw"
+                                 :color-wick-up="colors.colorCandleUp"
+                                 :color-wick-dw="colors.colorCandleDw"
+                    >
                     </trading-vue>
                 </template>
                 <template v-else>
@@ -60,8 +63,8 @@
                     colorBack: '#fff',
                     colorGrid: '#eee',
                     colorText: '#333',
-                    colorCandleUp: 'blue',
-                    colorCandleDw: 'red',
+                    colorCandleUp: 'red',
+                    colorCandleDw: 'blue',
                 }
             }
         },
