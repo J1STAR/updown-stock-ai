@@ -6,7 +6,7 @@
                 wrap
                 id="chartLayout"
         >
-            <v-flex xs12 text-center>
+            <v-flex sm12 text-center>
                 <template v-if="isActive">
                     <trading-vue ref="tradingVue" :data="chart"
                                  :title-txt="title"
@@ -17,6 +17,8 @@
                                  :color-text="colors.colorText"
                                  :color-candle-up="colors.colorCandleUp"
                                  :color-candle-dw="colors.colorCandleDw"
+                                 :color-vol-up="colors.colorCandleUp"
+                                 :color-vol-dw="colors.colorCandleDw"
                                  :color-wick-up="colors.colorCandleUp"
                                  :color-wick-dw="colors.colorCandleDw"
                     >
@@ -71,18 +73,28 @@
         watch: {
             chartData: function (newVal) {
                 this.chart.ohlcv = newVal
-                this.width = document.querySelector('#chartLayout').offsetWidth
-                this.height = document.querySelector('#chartLayout').offsetHeight
+
+                let startDate = new Date(this.chart.ohlcv[0][0])
+                startDate.setDate(startDate.getDate() - 1)
+
+                let endDate = new Date(this.chart.ohlcv[this.chart.ohlcv.length - 1][0])
+                endDate.setDate(endDate.getDate() + 1)
 
                 this.$nextTick(() =>
-                    this.$refs.tradingVue.setRange(this.chart.ohlcv[0][0], this.chart.ohlcv[this.chart.ohlcv.length - 1][0])
+                    this.$refs.tradingVue.setRange(Number(startDate), Number(endDate))
                 )
-            }
+                this.resizeChart()
+            },
         },
         mounted() {
-
+            window.addEventListener('resize', this.resizeChart)
         },
-        methods: {},
+        methods: {
+            resizeChart: function() {
+                this.width = document.querySelector('#chartLayout').offsetWidth
+                this.height = document.querySelector('#chartLayout').offsetHeight
+            }
+        },
         filters: {},
         components: {
             TradingVue

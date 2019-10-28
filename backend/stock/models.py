@@ -8,7 +8,7 @@ class StockInfo(EmbeddedDocument):
     open_price = fields.IntField()
     high_price = fields.IntField()
     low_price = fields.IntField()
-    volumn = fields.IntField()
+    volume = fields.IntField()
 
 
 class Corp(EmbeddedDocument):

@@ -21,5 +21,6 @@ from django.conf.urls import url, include
 urlpatterns = [
     path('admin/', admin.site.urls),
     url(r'^stock/', include('stock.urls')),
+    url(r'^news/', include('news.urls')),
     url(r'^$', TemplateView.as_view(template_name='index.html')),
 ]

@@ -1,12 +1,16 @@
 <template>
-	<v-container fluid fill-height>
-		<v-layout>
+	<v-container fluid>
+		<v-layout id="stock-info-layout" wrap>
 			<v-flex
+					id="stock-info-selector-container"
 					pa-4
-					xs2
+					xs12
+					sm12
+					md2
 			>
 				<v-autocomplete
 						label="업종"
+						dark
 						v-model="businessType"
 						@change="reloadCorparations"
 						item-text="name"
@@ -15,6 +19,7 @@
 				></v-autocomplete>
 				<v-autocomplete
 						label="종목"
+						dark
 						v-model="corp"
 						@change="reloadCorparationInfo"
 						item-text="name"
@@ -32,6 +37,7 @@
 				>
 					<template v-slot:activator="{ on }">
 						<v-text-field
+								dark
 								v-model="date1"
 								label="StartDate"
 								prepend-icon="mdi-calendar"
@@ -40,7 +46,7 @@
 								v-on="on"
 						></v-text-field>
 					</template>
-					<v-date-picker v-model="date1" @change="reloadCorparationInfo" no-title scrollable>
+					<v-date-picker v-model="date1" @change="reloadCorparationInfo" no-title scrollable style="z-index:999">
 						<v-spacer></v-spacer>
 						<v-btn text color="primary" @click="menu1 = false">Cancel</v-btn>
 						<v-btn text color="primary" @click="$refs.menu1.save(date1)">OK</v-btn>
@@ -57,6 +63,7 @@
 				>
 					<template v-slot:activator="{ on }">
 						<v-text-field
+								dark
 								v-model="date2"
 								label="EndDate"
 								prepend-icon="mdi-calendar"
@@ -64,7 +71,7 @@
 								v-on="on"
 						></v-text-field>
 					</template>
-					<v-date-picker v-model="date2" @change="reloadCorparationInfo" no-title scrollable>
+					<v-date-picker v-model="date2" @change="reloadCorparationInfo" no-title scrollable style="z-index:999">
 						<v-spacer></v-spacer>
 						<v-btn text color="primary" @click="menu2 = false">Cancel</v-btn>
 						<v-btn text color="primary" @click="$refs.menu2.save(date2)">OK</v-btn>
@@ -72,14 +79,20 @@
 				</v-menu>
 			</v-flex>
 			<v-flex
-					xs8
+					xs12
+					sm12
+					md8
 			>
 				<candle-chart :chartData="chartData" :isActive="status" :title="corp.name"/>
 			</v-flex>
 			<v-flex
-					xs2
+					id="stock-info-additional-info-container"
+					pa-4
+					xs12
+					sm12
+					md2
 			>
-
+				tttttttttttttttttttttttt
 			</v-flex>
 		</v-layout>
 	</v-container>
@@ -146,7 +159,7 @@
 					let currentDate = new Date(row['date'].substr(0, 10))
 					let endDate = new Date(this.date2)
 					if(startDate <= currentDate && currentDate <= endDate) {
-						this.chartData.push([currentDate.getTime(), row['open_price'], row['high_price'], row['low_price'], row['closing_price'], row['volumn']])
+						this.chartData.push([currentDate.getTime(), row['open_price'], row['high_price'], row['low_price'], row['closing_price'], row['volume']])
 					}
 				}
 
@@ -161,5 +174,11 @@
 </script>
 
 <style scoped>
+	#stock-info-layout {
+		box-shadow: whitesmoke 0px 2px 12px 2px
+	}
 
+	#stock-info-layout #stock-info-selector-container, #stock-info-additional-info-container {
+		background-color: #231C43
+	}
 </style>
