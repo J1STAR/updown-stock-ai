@@ -30,9 +30,9 @@ if __name__ == '__main__':
    # date open high low close volumn
    pre_data_list = []
    for stock_info in stock_info_list:
-       pre_dataset = [stock_info['date'][:10], stock_info['open_price'], stock_info['high_price'], stock_info['low_price'], stock_info['closing_price'], stock_info['volumn']]
+       pre_dataset = [stock_info['date'][:10], stock_info['open_price'], stock_info['high_price'], stock_info['low_price'], stock_info['closing_price'], stock_info['volume']]
        pre_data_list.append(pre_dataset)
-   df_stock_info = pd.DataFrame(pre_data_list, columns =['date', 'open', 'high', 'low', 'close', 'volumn'])
+   df_stock_info = pd.DataFrame(pre_data_list, columns =['date', 'open', 'high', 'low', 'close', 'volume'])
    df_stock_info = df_stock_info[df_stock_info.open != 0]
    # print(df_stock_info)
 
@@ -60,8 +60,11 @@ ax = train.plot()
 # print(ax)
 # ax2 = test.plot()
 test.plot(ax=ax)
+plt.xlabel('date')
+plt.ylabel('close')
 plt.legend(['train', 'test'])
 
+plt.show()
 
 # print("학습데이터")
 # print(train)
@@ -70,13 +73,13 @@ plt.legend(['train', 'test'])
 
 
 
-sc = MinMaxScaler()
+sc = MinMaxScaler(feature_range=(-1, 1))
 
 train_sc = sc.fit_transform(train)
 test_sc = sc.transform(test)
 
-# print("train_sc")
-# print(train_sc)
+print("train_sc")
+print(train_sc)
 
 train_sc_df = pd.DataFrame(train_sc, columns=['종가'], index=train.index)
 test_sc_df = pd.DataFrame(test_sc, columns=['종가'], index=test.index)
@@ -133,11 +136,11 @@ model.add(Dense(1)) # output = 1
 model.compile(loss='mean_squared_error', optimizer='adam')
 
 # loss를 모니터링해서 patience만큼 연속으로 loss률이 떨어지지 않으면 훈련을 멈춘다.
-early_stop = [EarlyStopping(monitor='val_loss', patience=50, verbose=1), ModelCheckpoint(filepath='best_model_close', monitor='val_loss', save_best_only=True)]
+early_stop = [EarlyStopping(monitor='val_loss', patience=100, verbose=1), ModelCheckpoint(filepath='best_model_close', monitor='val_loss', save_best_only=True)]
 
 # history=model.fit(X_train_t, Y_train, epochs=100, batch_size=30, verbose=1, callbacks=[early_stop])
 
-history = model.fit(X_train_t, Y_train, epochs=1000, verbose=2, batch_size=5, validation_data=(X_test_t, Y_test), callbacks=early_stop)
+history = model.fit(X_train_t, Y_train, epochs=4000, verbose=2, batch_size=5, validation_data=(X_test_t, Y_test), callbacks=early_stop)
 
 # Y_pred = model.predict(X_test_t)
 
