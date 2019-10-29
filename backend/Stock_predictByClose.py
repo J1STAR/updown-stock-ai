@@ -9,6 +9,7 @@ from pandas.tseries.offsets import  MonthEnd
 
 from sklearn.preprocessing import MinMaxScaler
 
+#tanh가 default이다?
 
 from keras.layers import LSTM
 from keras.models import Sequential
@@ -17,6 +18,12 @@ import keras.backend.tensorflow_backend as K
 from keras.callbacks import EarlyStopping
 from keras.callbacks import ModelCheckpoint
 from keras.models import load_model
+#케라스는 파이썬으로 구현된 쉽고 간결한 딥러닝 라이브러리입니다.
+# 딥러닝 비전문가라도 각자 분야에서 손쉽게 딥러닝 모델을 개발하고
+# 활용할 수 있도록 케라스는 직관적인 API를 제공하고 있습니다.
+# 내부적으로는 텐서플로우(TensorFlow), 티아노(Theano), CNTK 등의 딥러닝 전용 엔진이 구동되지만
+# 케라스 사용자는 복잡한 내부 엔진을 알 필요는 없습니다. 직관적인 API로 쉽게 다층퍼셉트론 모델, 컨볼루션 신경망 모델,
+# 순환 신경망 모델 또는 이를 조합한 모델은 물론 다중 입력 또는 다중 출력 등 다양한 구성을 할 수 있습니다.
 
 import requests
 
@@ -60,8 +67,10 @@ if __name__ == '__main__':
    #  중 하나의 형식입니다. REST 서버는 클라이언트로 하여금 HTTP 프로토콜을 사용해
    #  서버의 정보에 접근 및 변경을 가능케 합니다. 여기서 정보는 text, xml, json 등
    # 형식으로 제공되는데, 요즘 트렌드는 json
+
    stock_info_list = data['corp']['stock_info']
    # date open high low close volumn
+
    pre_data_list = []
    for stock_info in stock_info_list:
        pre_dataset = [stock_info['date'][:10], stock_info['open_price'],
@@ -69,6 +78,9 @@ if __name__ == '__main__':
                       stock_info['closing_price'], stock_info['volume']]
        pre_data_list.append(pre_dataset)
    df_stock_info = pd.DataFrame(pre_data_list, columns =['date', 'open', 'high', 'low', 'close', 'volume'])
+   #dataframe은 pandas의 기본 자료구조로 2차원 배열 또는 리스트,
+   #data table 전체를 포함하는 object이다.
+
    #volumn : 거래량
    # print(df_stock_info)
 
@@ -77,6 +89,7 @@ if __name__ == '__main__':
 print(df_stock_info)
 
 sequence_length=5  # 최근 몇일 거 보고 예측할 건지
+#한달이 20일 1주가 5일
 
 df_stock_info.set_index('date')
 # split_date = pd.Timestamp('2011-01-01')
@@ -115,26 +128,73 @@ plt.legend(['train', 'test'])
 
 
 sc = MinMaxScaler()
+#스케일링
+#스케일링은 자료 집합에 적용되는 전처리 과정으로 모든 자료에 선형 변환을 적용하여
+# 전체 자료의 분포를 평균 0, 분산 1이 되도록 만드는 과정이다.스케일링은 자료의
+# 오버플로우(overflow)나 언더플로우(underflow)를 방지하고 독립 변수의 공분산
+# 행렬의 조건수(condition number)를 감소시켜 최적화 과정에서의 안정성 및 수렴 속도를 향상시킨다.
 
-train_sc = sc.fit_transform(train)
+#scikit-learn에서는 다음과 같은 스케일링 클래스를 제공한다.
+
+#StandardScaler(X): 평균이 0과 표준편차가 1이 되도록 변환.
+#RobustScaler(X): 중앙값(median)이 0, IQR(interquartile range)이 1이 되도록 변환.
+#MinMaxScaler(X): 최대값이 각각 1, 최소값이 0이 되도록 변환  -- >인자없을 때 default가 0 -1
+#MaxAbsScaler(X): 0을 기준으로 절대값이 가장 큰 수가 1또는 -1이 되도록 변환
+
+
+
+
+#minmaxscaler로  sc를 0-1로 만들어주고 .train을 거기 넣어주는 느낌. train이 작업완료되었으므로
+#그 다음  test도 transform
+train_sc = sc.fit_transform(train)#표준화
 test_sc = sc.transform(test)
+#서로 다른 정규분포 사이에 비교를 하거나, 특정 정규분포를 토대로 하여 통계적 추정 등의 분석작업을 해야 할 때,
+# 필요에 따라 정규분포의 분산과 표준편차를 표준에 맞게 통일시키는 것. 정규분포의 치환적분이라고 보면 된다.
 
-# print("train_sc")
-# print(train_sc)
+#표준화가 되지 않은 데이터는 비유하자면 늘어났다 줄어들었다 하는 자를 가지고 길이를 재는 것과도 같다.
+#  게다가 서로 다른 단위체계를 가진 서로 다른 연구대상에 대해서도 분석의 호환이 안 된다.
+# 그래서 표준적으로 사용할 수 있는 통계적 단위를 제안하여 그것에 자신의 "자" 를 일치시켜야 하는 것이다.
+# 이 때 모두가 쓸 수 있는 단위로서 제안되는 것이 바로 표준 편차, 즉 시그마(sigma)이다.
+
+#즉, 평균을 0으로, 표준 편차를 1로 만들어준다.
+
+
+#1. Fit () : 메서드는 매개 변수 μ 및 σ를 계산하고 내부 개체로 저장합니다.
+
+#2. Transform () : 이 계산 된 매개 변수를 사용하는 방법은 특정 데이터 집합에 변환을 적용합니다.
+
+#3. Fit_transform () : 데이터 집합의 변환을 위해 fit () 및 transform () 메서드를 조인합니다.
+
+#print("train_sc") #소수 8자리까지 표현하나봄
+#print(train_sc)
 
 train_sc_df = pd.DataFrame(train_sc, columns=['Scaled'], index=train.index)
 test_sc_df = pd.DataFrame(test_sc, columns=['Scaled'], index=test.index)
+#속성이 scaled 소수 7자리에서 반올림 하나봄
 
-# print("train_sc_df")
-# print(train_sc_df)
+#print("train_sc_df")
+#print(train_sc_df)
 
 # 시가 5일 종가 5일
+# ... 같은 truncation(잘림) 말고 다 보고싶을때
+# pd.set_option('display.max_colwidth',-1) 해주기
+
 
 for s in range(1, sequence_length+1):
     train_sc_df['shift_{}'.format(s)] = train_sc_df['Scaled'].shift(s)
     test_sc_df['shift_{}'.format(s)] = test_sc_df['Scaled'].shift(s)
 #원래 있던 데이터 한단계씩 미뤄가지고   시가 5개 종가 5개 고가 5개  저가 5개
+#여기선 종가로 했으므로 처음꺼 nan이고 그다음부턴
+#   Scaled   shift_1   shift_2   shift_3   shift_4   shift_5
+# 5630  0.289941       NaN       NaN       NaN       NaN       NaN
+# 5631  0.289941  0.289941       NaN       NaN       NaN       NaN
+# 5632  0.250493  0.289941  0.289941       NaN       NaN       NaN
+# 5633  0.240631  0.250493  0.289941  0.289941       NaN       NaN
+# 5634  0.181460  0.240631  0.250493  0.289941  0.289941     NaN
+#이런식으로 한칸씩 밀게 된다.
 
+print("train_sc_df")
+print(train_sc_df)
 
 X_train = train_sc_df.dropna().drop('Scaled', axis=1)
 Y_train = train_sc_df.dropna()[['Scaled']]
@@ -142,8 +202,16 @@ Y_train = train_sc_df.dropna()[['Scaled']]
 # 예를 들면 7일차 예측하려면 이전의 5일치가 2,3,4,5,6이어서 상관없지만
 # 4알차 예측하려면 이전의 5일치 -1 0 1 2 3이어서
 # -1 0 1 2 3 이어서 -1과 0을 자르는 작업
-# print(X_train)
-# print(Y_train)
+print(X_train)
+#      shift_1   shift_2   shift_3   shift_4   shift_5
+#5635  0.181460  0.240631  0.250493  0.289941  0.289941
+#5636  0.191321  0.181460  0.240631  0.250493  0.289941
+#5637  0.171598  0.191321  0.181460  0.240631  0.250493
+#5638  0.201183  0.171598  0.191321  0.181460  0.240631
+#5639  0.201183  0.201183  0.171598  0.191321  0.181460
+
+# 이런식으로 nan이 있는 것들이 제거된다.
+print(Y_train)
 
 
 # 2일치 1일치
@@ -154,12 +222,13 @@ Y_test = test_sc_df.dropna()[['Scaled']]
 # print(X_train)
 
 X_train = X_train.values
-# print(X_train)
+print('X_train.values를 대입한 X_train값')
+print(X_train)
 X_test = X_test.values
 
 Y_train = Y_train.values
 print("Y_train")
-print(type(Y_train))
+print(type(Y_train)) #<class 'numpy.ndarray'>
 print(Y_train)
 Y_test = Y_test.values
 
@@ -179,7 +248,24 @@ print(X_train_t)
 K.clear_session()
 
 model = Sequential() # Sequential Model
+#sequential : 레이어들이 일렬로 쭉 나열된 형태
+# model과 다른 것은 모델의 맨 앞에 input이 없다는 것
+#sequential의 경우, 첫번째 레이어에서 input_shape에 input의 데이터 형
+#태를 함께 넘겨준다.
 model.add(LSTM(20, input_shape=(sequence_length, 1)))# (timestep, feature)
+#https://tykimos.github.io/2017/04/09/RNN_Layer_Talk/
+
+# ex) LSTM(20, input_shape=(sequence_length,1)) 뒤에 dense레이어도 필요
+#첫번째 인자 : 메모리 셀의 개수(노드의 개수)입니다.@@@이걸 우리가 정할 수 있다.
+#타임스텝(하나의 샘플에 포함된 시퀀스 개수) sequence_length개, 속성이 1개
+# 매 샘플마다 sequence length개의 값을 입력
+# 입력되는 종가 1개 당 하나의 인덱스 값을 입력하므로 속성이 한개
+#input_dim : 입력 속성 수 입니다.
+
+# ex) LSTM(3, input_dim=1)
+#첫번째 인자 : 메모리 셀의 개수입니다.
+#input_dim : 입력 속성 수 입니다.
+
 # model.add(Dense(20))
 # model.add(LSTM(20))
 
@@ -192,9 +278,19 @@ model.add(LSTM(20, input_shape=(sequence_length, 1)))# (timestep, feature)
 
 
 
-
+#dense에 대해선 여기 url 참고
+#https://tykimos.github.io/2017/04/09/RNN_Layer_Talk/
 model.add(Dense(1)) # output = 1
+#ex)모델.add(keras.layers.Dense(1,input_shape(1,)))
+#Dense는 완전연결계층으로 여러 레이어들중 하나입니다.
+# 가장 대표적인 레이어이죠. w*x+b와 같은 계산을 수행하는 레이어입니다.
+#  Dense의 첫번째 매개변수는 노드의 갯수입니다. 그리고 input_shape는 입력값의 모양입니다.
+#  배열의 차원이라고 하면 이해가 쉬울 것 입니다.
+# (1,)라고 되어있는 이유는 1개씩 여러번 해야하기에 정하지 않았다는 의미로 남겨둡니다.
 # dense output 어떻게 나올지
+
+#즉 lstm과 dense를 추가했으므로 LSTM레이어 1개와 Dense 레이어로 구성
+
 model.compile(loss='mean_squared_error', optimizer='adam')
 # loss로 계산을 해서 오차값을 어떻게 수정하는지의 알고리즘. 그 중에 adam이 보편적으로 괜찮다고 한다.
 
@@ -206,14 +302,25 @@ model.compile(loss='mean_squared_error', optimizer='adam')
 
 # loss를 모니터링해서 patience만큼 연속으로 loss률이 떨어지지 않으면 훈련을 멈춘다.
 early_stop = [EarlyStopping(monitor='val_loss', patience=20, verbose=1),
+
+#학습을 하면 loss 오차가 줄어야 over training
+#조기종료 : drop out 가중치 제한  patience : loss율이 0.000  연속으로 몇번 떨어지지 않을떄까지 버티는 것 10 9 8 7 계속 10번 반복되면 개선불가 stop
+
+
+
 ModelCheckpoint(filepath='best_model_close', monitor='val_loss', save_best_only=True)]
 #
 
 # history=model.fit(X_train_t, Y_train, epochs=100, batch_size=30, verbose=1, callbacks=[early_stop])
+#verbose : ? print창이 뜬다
+# history=model.fit(X_train_t, Y_train, epochs=100, batch_size=30, verbose=1, callbacks=[early_stop])
+#epoch : 반복횟수 batch size : 에러가지고 가중치 개선 에러를 어느 주기마다 개선할건지 보는
+#것  batch size가 1이면 하나의 케이스 오차 있으면 바로 적용 한번에 30개
 
 history = model.fit(X_train_t, Y_train, epochs=1000, verbose=2, batch_size=30, validation_data=(X_test_t, Y_test),
                     callbacks=early_stop)
 
+#unit batch epoch 이전 몇일 치 sequence length,
 # Y_pred = model.predict(X_test_t)
 
 training_loss = history.history["loss"]
@@ -257,6 +364,7 @@ plt.plot(count, Y_test, "r--")
 plt.plot(count, Y_pred, "b-")
 
 plt.legend(["Y_test", "Y_pred_by_close"])
+
 
 Y_pred = model.predict(X_test_t)
 
