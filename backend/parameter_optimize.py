@@ -233,9 +233,9 @@ def run():
     # fit and evaluate model
     # train_trimmed = train_scaled[2:, :]
     # config
-    repeats = 10
+    repeats = 5
     n_batch = 5
-    n_epochs = 500
+    n_epochs = 100
     n_neurons = 1
     # run diagnostic tests
     for i in range(repeats):

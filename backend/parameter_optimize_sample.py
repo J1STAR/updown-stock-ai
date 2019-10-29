@@ -151,9 +151,9 @@ def run():
     print("raw_values")
     print(raw_values)
     # config
-    repeats = 10
+    repeats = 5
     n_batch = 4
-    n_epochs = 500
+    n_epochs = 100
     n_neurons = 1
     # run diagnostic tests
     for i in range(repeats):
