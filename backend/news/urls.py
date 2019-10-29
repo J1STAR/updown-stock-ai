@@ -4,5 +4,5 @@ from django.urls import path, re_path
 from . import views
 
 urlpatterns = [
-    url(r'^$', views.NewsView.as_view()),
+    re_path(r'^(?P<corp>.*)/$', views.NewsView.as_view()),
 ]

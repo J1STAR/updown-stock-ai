@@ -6,7 +6,7 @@ export default {
 			return res.data
 		})
 	},
-	loadCorparations: async function(businessCode) {
+	loadCorporations: async function(businessCode) {
 		return await axios.get('/stock/businessTypes/' + businessCode).then((res) => {
 			return res.data
 		})

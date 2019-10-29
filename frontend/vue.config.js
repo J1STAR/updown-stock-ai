@@ -9,6 +9,10 @@ module.exports = {
       "/stock": {
         target: "http://j1star.ddns.net:8000",
         changeOrigin: true
+      },
+      "/news": {
+        target: "http://j1star.ddns.net:8000",
+        changeOrigin: true
       }
     },
     headers: {

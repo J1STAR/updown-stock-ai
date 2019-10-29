@@ -1,5 +1,5 @@
 <template>
-	<v-container fluid>
+	<v-container fluid id="stock-chart-container">
 		<v-layout id="stock-info-layout" wrap>
 			<v-flex
 					id="stock-info-selector-container"
@@ -12,7 +12,7 @@
 						label="업종"
 						dark
 						v-model="businessType"
-						@change="reloadCorparations"
+						@change="loadCorporations"
 						item-text="name"
 						:items="businessTypes"
 						return-object
@@ -21,9 +21,9 @@
 						label="종목"
 						dark
 						v-model="corp"
-						@change="reloadCorparationInfo"
+						@change="loadCorporationInfo"
 						item-text="name"
-						:items="corparations"
+						:items="corporations"
 						return-object
 				></v-autocomplete>
 				<v-menu
@@ -42,11 +42,10 @@
 								label="StartDate"
 								prepend-icon="mdi-calendar"
 								readonly
-								@keydown="test"
 								v-on="on"
 						></v-text-field>
 					</template>
-					<v-date-picker v-model="date1" @change="reloadCorparationInfo" no-title scrollable style="z-index:999">
+					<v-date-picker v-model="date1" no-title scrollable style="z-index:999">
 						<v-spacer></v-spacer>
 						<v-btn text color="primary" @click="menu1 = false">Cancel</v-btn>
 						<v-btn text color="primary" @click="$refs.menu1.save(date1)">OK</v-btn>
@@ -71,7 +70,7 @@
 								v-on="on"
 						></v-text-field>
 					</template>
-					<v-date-picker v-model="date2" @change="reloadCorparationInfo" no-title scrollable style="z-index:999">
+					<v-date-picker v-model="date2" no-title scrollable style="z-index:999">
 						<v-spacer></v-spacer>
 						<v-btn text color="primary" @click="menu2 = false">Cancel</v-btn>
 						<v-btn text color="primary" @click="$refs.menu2.save(date2)">OK</v-btn>
@@ -83,7 +82,7 @@
 					sm12
 					md8
 			>
-				<candle-chart :chartData="chartData" :isActive="status" :title="corp.name"/>
+				<candle-chart :date1="date1" :date2="date2" :chartData="chartData" :isActive="status" :title="corp.name"/>
 			</v-flex>
 			<v-flex
 					id="stock-info-additional-info-container"
@@ -115,7 +114,7 @@
 				businessTypes: [
 				],
 				corp: "",
-				corparations: [
+				corporations: [
 				],
 				chartData: [],
 			};
@@ -125,24 +124,20 @@
 			this.businessTypes = this.$store.getters['stock/getBusinessTypes']
 			this.businessType = this.businessTypes[0]
 
-			this.reloadCorparations()
-
+			await this.loadCorporations()
 			let startDate = new Date()
 			startDate.setDate(startDate.getDate() - 30)
 			this.date1 = startDate.toISOString().substr(0, 10)
 		},
 		methods: {
-			test: function() {
-				console.log("test")
-			},
-			reloadCorparations: async function() {
-				await this.$store.dispatch('stock/loadCorparations', this.businessType.business_code)
-				this.corparations = this.$store.getters['stock/getCorparations']
-				this.corp = this.corparations[0]
+			loadCorporations: async function() {
+				await this.$store.dispatch('stock/loadCorporations', this.businessType.business_code)
+				this.corporations = this.$store.getters['stock/getCorporations']
+				this.corp = this.corporations[0]
 
-				this.reloadCorparationInfo()
+				this.loadCorporationInfo()
 			},
-			reloadCorparationInfo: async function() {
+			loadCorporationInfo: async function() {
 				this.status = false
 
 				let res = await this.$http.get("/stock/corp/"+ this.corp.corp_code)
@@ -155,14 +150,14 @@
 
 				this.chartData = []
 				for(let row of stock_info) {
-					let startDate = new Date(this.date1)
 					let currentDate = new Date(row['date'].substr(0, 10))
-					let endDate = new Date(this.date2)
-					if(startDate <= currentDate && currentDate <= endDate) {
+
+					if(row['open_price'] !== 0) {
 						this.chartData.push([currentDate.getTime(), row['open_price'], row['high_price'], row['low_price'], row['closing_price'], row['volume']])
 					}
 				}
 
+				this.$emit("changeCorp", this.corp)
 				this.status = true
 			}
 		},
@@ -174,7 +169,13 @@
 </script>
 
 <style scoped>
+	#stock-chart-container {
+		min-height: 600px
+	}
+
 	#stock-info-layout {
+		min-height: 600px;
+
 		box-shadow: whitesmoke 0px 2px 12px 2px
 	}
 

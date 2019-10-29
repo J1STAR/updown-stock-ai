@@ -7,7 +7,7 @@ Vue.use(Vuex);
 
 const state = {
 	businessTypes: [],
-	corparations: [],
+	corporations: [],
 }
 
 // getters
@@ -18,20 +18,20 @@ const getters = {
 	getBusinessTypes: function(state) {
 		return state.businessTypes
 	},
-	getCorparations: function(state) {
-		return state.corparations
+	getCorporations: function(state) {
+		return state.corporations
 	}
 }
 
 // actions
 const actions = {
 	loadBusinessTypes: async function({commit}) {
-		var res = await stockService.loadBusinessTypes()
+		let res = await stockService.loadBusinessTypes()
 		commit('setBusinessTypes', res)
 	},
-	loadCorparations: async function({commit}, businessCode) {
-		var res = await stockService.loadCorparations(businessCode)
-		commit('setCorparations', res)
+	loadCorporations: async function({commit}, businessCode) {
+		let res = await stockService.loadCorporations(businessCode)
+		commit('setCorporations', res)
 	}
 }
 
@@ -43,8 +43,8 @@ const mutations = {
 	setBusinessTypes: function(state, payload) {
 		return state.businessTypes = payload
 	},
-	setCorparations: function(state, payload) {
-		return state.corparations = payload
+	setCorporations: function(state, payload) {
+		return state.corporations = payload
 	}
 }
 

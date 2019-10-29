@@ -1,5 +1,5 @@
 <template>
-    <v-container fluid fill-height pa-0>
+    <v-container id="candle-chart-container" fill-height fluid pa-0>
         <v-layout
                 justify-center
                 align-center
@@ -52,6 +52,12 @@
             },
             chartData: {
                 type: Array
+            },
+            date1: {
+                type: String
+            },
+            date2: {
+                type: String
             }
         },
         data() {
@@ -71,19 +77,18 @@
             }
         },
         watch: {
-            chartData: function (newVal) {
-                this.chart.ohlcv = newVal
-
-                let startDate = new Date(this.chart.ohlcv[0][0])
-                startDate.setDate(startDate.getDate() - 1)
-
-                let endDate = new Date(this.chart.ohlcv[this.chart.ohlcv.length - 1][0])
-                endDate.setDate(endDate.getDate() + 1)
-
-                this.$nextTick(() =>
-                    this.$refs.tradingVue.setRange(Number(startDate), Number(endDate))
-                )
-                this.resizeChart()
+            date1: function () {
+                if(this.chartData.length !== 0) {
+                    this.drawChart()
+                }
+            },
+            date2: function () {
+                if(this.chartData.length !== 0) {
+                    this.drawChart()
+                }
+            },
+            chartData: function () {
+                this.setChartData()
             },
         },
         mounted() {
@@ -93,6 +98,22 @@
             resizeChart: function() {
                 this.width = document.querySelector('#chartLayout').offsetWidth
                 this.height = document.querySelector('#chartLayout').offsetHeight
+            },
+            drawChart: function() {
+                let startDate = new Date(this.date1)
+                startDate.setDate(startDate.getDate() - 1)
+
+                let endDate = new Date(this.date2)
+                endDate.setDate(endDate.getDate() + 1)
+
+                this.$nextTick(() =>
+                    this.$refs.tradingVue.setRange(Number(startDate), Number(endDate))
+                )
+                this.resizeChart()
+            },
+            setChartData: function() {
+                this.chart.ohlcv = this.chartData
+                this.drawChart()
             }
         },
         filters: {},
@@ -103,5 +124,7 @@
 </script>
 
 <style scoped>
-
+    #candle-chart-container {
+        min-height: 600px
+    }
 </style>

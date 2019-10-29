@@ -136,7 +136,6 @@ def crawl_corp_stock_info_1day(corp):
     requests.post("http://localhost:8000/stock/corp/" + corp['corp_code'] + "/", json=data)
 
 
-
 if __name__ == '__main__':
     business_types = get_business_types()
 
@@ -148,4 +147,4 @@ if __name__ == '__main__':
     print("Corp size > ", len(corparations))
 
     pool = Pool(processes=4)
-    pool.map(crawl_corp_stock_info, corparations)
+    pool.map(crawl_corp_stock_info_1day, corparations)
