@@ -20,7 +20,7 @@ import requests
 tf.compat.v1.set_random_seed(777)
 
 if __name__ == '__main__':
-   res = requests.get("http://j1star.ddns.net:8000/stock/corp/024110")
+   res = requests.get("http://j1star.ddns.net:8000/stock/corp/035720")
    data = res.json()
    stock_info_list = data['corp']['stock_info']
 
@@ -125,13 +125,13 @@ model.add(Dropout(0.2))  # 과적합(overfitting)을 피하기 위한 드롭아�
 model.add(Dense(1))  # output = 1 결과값이 몇개인지
 model.compile(loss='mean_squared_error', optimizer='adam')
 model.add(Activation('linear'))
-
+model.summary()
 # loss를 모니터링해서 patience만큼 연속으로 loss률이 떨어지지 않으면 훈련을 멈춘다.
 early_stop = [EarlyStopping(monitor='val_loss', patience=20, verbose=1), ModelCheckpoint(filepath='best_model_close', monitor='val_loss', save_best_only=True)]
 
 # history=model.fit(X_train_t, Y_train, epochs=100, batch_size=30, verbose=1, callbacks=[early_stop])
 
-history = model.fit(X_train_t, Y_train, epochs=1000, verbose=2, batch_size=100, validation_data=(X_test_t, Y_test), callbacks=early_stop)
+history = model.fit(X_train_t, Y_train, epochs=100, verbose=1, batch_size=10, validation_data=(X_test_t, Y_test), callbacks=early_stop)
 
 # Y_pred = model.predict(X_test_t)
 
@@ -150,13 +150,9 @@ epoch_count = range(1, len(training_loss)+1)
 # plt.show()
 
 plt.figure(2)
-
 plt.plot(epoch_count, training_loss, "r--")
-
 plt.plot(epoch_count, test_loss, "b-")
-
 plt.legend(["Training Loss", "Test Loss"])
-
 plt.xlabel("Epoch")
 plt.ylabel("Loss Score")
 
