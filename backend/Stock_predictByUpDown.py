@@ -79,11 +79,21 @@ if __name__ == '__main__':
 
     close_data_sc = sc.fit_transform(stock_data.loc[maxlength-240:, ['close']])
 
-    Y_train = close_data_sc[1:181]
-    Y_test = close_data_sc[181:]
+    # Y_train = close_data_sc[1:181]
+    # Y_test = close_data_sc[181:]
 
-    train['close'] = close_data_sc[:180]
-    test['close'] = close_data_sc[180:]
+    close_updown = []
+    for i in range(1, len(close_data_sc)):
+        if close_data_sc[i-1] < close_data_sc[i]:
+            close_updown.append(0.01)
+        else:
+            close_updown.append(-0.01)
+    Y_train = close_updown[0:180]
+    Y_test = close_updown[180:]
+    print(close_updown)
+
+    # train['close'] = close_data_sc[:180]
+    # test['close'] = close_data_sc[180:]
 
     print("test")
     print(train)
@@ -133,8 +143,8 @@ if __name__ == '__main__':
     # print(X_train)
     # print(Y_train)
 
-    X_train_t = X_train.reshape(X_train.shape[0], 16, 1)
-    X_test_t = X_test.reshape(X_test.shape[0], 16, 1)
+    X_train_t = X_train.reshape(X_train.shape[0], 15, 1)
+    X_test_t = X_test.reshape(X_test.shape[0], 15, 1)
 
     # print("최종 DATA")
     # print(type(X_train_t))
@@ -147,10 +157,10 @@ if __name__ == '__main__':
     K.clear_session()
 
     model = Sequential() # Sequential Model
-    model.add(LSTM(32, input_shape=(16, 1)))# (timestep, feature)
-    # model.add(LSTM(256, input_shape=(16, 1), return_sequences=True, stateful=False))# (timestep, feature)
+    model.add(LSTM(256, input_shape=(15, 1)))# (timestep, feature)
+    # model.add(LSTM(256, input_shape=(sequence_length, 1), return_sequences=True, stateful=False))# (timestep, feature)
     # model.add(BatchNormalization())
-    # model.add(LSTM(128, return_sequences=False, stateful=False))# (timestep, feature)
+    # model.add(LSTM(128, return_sequences=True, stateful=False))# (timestep, feature)
     # model.add(BatchNormalization())
     # model.add(LSTM(64, return_sequences=False, stateful=False))# (timestep, feature)
     # model.add(Dense(100))
@@ -159,11 +169,11 @@ if __name__ == '__main__':
     model.add(Dense(1)) # output = 1
     model.compile(loss='mean_squared_error', optimizer='adam')
 
-    early_stop = [EarlyStopping(monitor='val_loss', patience=50, verbose=2), ModelCheckpoint(filepath='best_model_close', monitor='val_loss', save_best_only=True)]
+    early_stop = [EarlyStopping(monitor='val_loss', patience=50, verbose=1), ModelCheckpoint(filepath='best_model_close', monitor='val_loss', save_best_only=True)]
 
     # history=model.fit(X_train_t, Y_train, epochs=100, batch_size=30, verbose=1, callbacks=[early_stop])
 
-    history = model.fit(X_train_t, Y_train, epochs=1000, verbose=2, batch_size=10,  validation_data=(X_test_t, Y_test), callbacks=early_stop)
+    history = model.fit(X_train_t, Y_train, epochs=100, verbose=2, batch_size=1,  validation_data=(X_test_t, Y_test), callbacks=early_stop)
     # history = model.fit(X_train_t, Y_train, epochs=200, verbose=2, batch_size=1, validation_data=(X_test_t, Y_test))
 
     # Y_pred = model.predict(X_test_t)
@@ -230,27 +240,32 @@ if __name__ == '__main__':
 
     count = 0
     best_count = 0
-    for val in range(1, len(Y_test)):
-        test_val = Y_test[val]-Y_test[val-1]
-        pred_val = Y_pred[val]-Y_test[val-1]
-        pred_best_val = Y_pred_best[val]-Y_test[val-1]
-        if test_val > 0:
-            test_val = 1
-        else:
-            test_val = -1
-        if pred_val > 0:
-            pred_val = 1
-        else:
-            pred_val = -1
-        if pred_best_val > 0:
-            pred_best_val = 1
-        else:
-            pred_best_val = -1
-        if test_val == pred_best_val:
-            best_count+=1
-
-        if test_val == pred_val:
-            count+=1
+    # for val in range(1, len(Y_test)):
+        # test_val = Y_test[val]-Y_test[val-1]
+        # pred_val = Y_pred[val]-Y_test[val-1]
+        # pred_best_val = Y_pred_best[val]-Y_test[val-1]
+        # if test_val > 0:
+        #     test_val = 1
+        # else:
+        #     test_val = -1
+        # if pred_val > 0:
+        #     pred_val = 1
+        # else:
+        #     pred_val = -1
+        # if pred_best_val > 0:
+        #     pred_best_val = 1
+        # else:
+        #     pred_best_val = -1
+        # if test_val == pred_best_val:
+        #     best_count+=1
+        #
+        # if test_val == pred_val:
+        #     count+=1
+    for val in range(0, len(Y_test)):
+        if Y_test[val] * Y_test[val] > 0:
+            count += 1
+        if Y_pred_best[val] * Y_test[val-1] > 0:
+            best_count = 0
 
     print("count = ", count)
     print("총 개수 = ", len(Y_test))
