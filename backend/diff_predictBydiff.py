@@ -39,7 +39,7 @@ if __name__ == '__main__':
 
 print(df_stock_info)
 
-sequence_length=1
+sequence_length=5
 
 df_stock_info.set_index('date')
 # split_date = pd.Timestamp('2011-01-01')
@@ -129,10 +129,10 @@ X_test_t = X_test.reshape(X_test.shape[0], sequence_length, 1)
 K.clear_session()
 
 model = Sequential() # Sequential Model
-model.add(LSTM(60, input_shape=(sequence_length, 1)))# (timestep, feature)
+model.add(LSTM(200, input_shape=(sequence_length, 1)))# (timestep, feature)
 # model.add(Dense(100))
 # model.add(Dense(100))
-model.add(Dropout(0.2))
+# model.add(Dropout(0.2))
 model.add(Dense(1)) # output = 1
 
 adam = optimizers.adam(learning_rate=0.01)
@@ -140,7 +140,7 @@ adam = optimizers.adam(learning_rate=0.01)
 model.compile(loss='mean_squared_error', optimizer=adam)
 
 # loss를 모니터링해서 patience만큼 연속으로 loss률이 떨어지지 않으면 훈련을 멈춘다.
-early_stop = [EarlyStopping(monitor='val_loss', patience=20, verbose=1), ModelCheckpoint(filepath='best_model_diff', monitor='val_loss', save_best_only=True)]
+early_stop = [EarlyStopping(monitor='val_loss', patience=30, verbose=1), ModelCheckpoint(filepath='best_model_diff', monitor='val_loss', save_best_only=True)]
 
 # history=model.fit(X_train_t, Y_train, epochs=100, batch_size=30, verbose=1, callbacks=[early_stop])
 
@@ -205,15 +205,15 @@ plt.plot(count, sc.inverse_transform(Y_pred_best))
 #
 plt.legend(["Y_test", "Y_pred_best"])
 
-plt.figure(5)
-
-c = range(1, len(Y_train)+1)
-count= range(len(Y_train)+1, len(Y_train)+len(Y_pred)+1)
-ax = plt.plot(c, Y_train)
-plt.plot(count, sc.inverse_transform(Y_test))
-plt.plot(count, sc.inverse_transform(Y_pred_best))
-
-plt.legend(["Y_train", "Y_test", "Y_pred_best"])
+# plt.figure(5)
+#
+# c = range(1, len(Y_train)+1)
+# count= range(len(Y_train)+1, len(Y_train)+len(Y_pred)+1)
+# ax = plt.plot(c, Y_train)
+# plt.plot(count, sc.inverse_transform(Y_test))
+# plt.plot(count, sc.inverse_transform(Y_pred_best))
+#
+# plt.legend(["Y_train", "Y_test", "Y_pred_best"])
 
 
 # print(Y_test)

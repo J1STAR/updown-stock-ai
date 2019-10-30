@@ -18,6 +18,8 @@ import keras.backend.tensorflow_backend as K
 from keras.callbacks import EarlyStopping
 from keras.callbacks import ModelCheckpoint
 from keras.models import load_model
+from keras import optimizers
+from keras import losses
 
 import requests
 # 3037 -0.066452  0.001087 -0.081858  0.009698  0.377315 -0.087889 -0.080435
@@ -35,9 +37,9 @@ if __name__ == '__main__':
    # date open high low close volumn
    pre_data_list = []
    for stock_info in stock_info_list:
-       pre_dataset = [stock_info['date'][:10], stock_info['open_price'], stock_info['high_price'], stock_info['low_price'], stock_info['closing_price'], stock_info['volumn']]
+       pre_dataset = [stock_info['date'][:10], stock_info['open_price'], stock_info['high_price'], stock_info['low_price'], stock_info['closing_price'], stock_info['volume']]
        pre_data_list.append(pre_dataset)
-   df_stock_info = pd.DataFrame(pre_data_list, columns =['date', 'open', 'high', 'low', 'close', 'volumn'])
+   df_stock_info = pd.DataFrame(pre_data_list, columns =['date', 'open', 'high', 'low', 'close', 'volume'])
    df_stock_info = df_stock_info[df_stock_info.open != 0]
    # print(df_stock_info)
 
@@ -52,8 +54,8 @@ df_stock_info.set_index('date')
 #
 
 maxlength = len(df_stock_info)
-train = df_stock_info.loc[maxlength-960:maxlength-241, ['open', 'high', 'low', 'close', 'volumn']]
-test = df_stock_info.loc[maxlength-240:, ['open', 'high', 'low', 'close', 'volumn']]
+train = df_stock_info.loc[maxlength-960:maxlength-241, ['open', 'high', 'low', 'close', 'volume']]
+test = df_stock_info.loc[maxlength-240:, ['open', 'high', 'low', 'close', 'volume']]
 
 
 # print(train)
@@ -96,12 +98,12 @@ for s in range(2, sequence_length+2):
     train_sc_df['{}일전 시작가'.format(s)] = train_sc_df['시작가'].shift(s)
     train_sc_df['{}일전 고가'.format(s)] = train_sc_df['고가'].shift(s)
     train_sc_df['{}일전 저가'.format(s)] = train_sc_df['저가'].shift(s)
-    train_sc_df['{}일전 종가'.format(s)] = train_sc_df['종가'].shift(s)
+    # train_sc_df['{}일전 종가'.format(s)] = train_sc_df['종가'].shift(s)
     train_sc_df['{}일전 거래량'.format(s)] = train_sc_df['거래량'].shift(s)
     test_sc_df['{}일전 시작가'.format(s)] = test_sc_df['시작가'].shift(s)
     test_sc_df['{}일전 고가'.format(s)] = test_sc_df['고가'].shift(s)
     test_sc_df['{}일전 저가'.format(s)] = test_sc_df['저가'].shift(s)
-    test_sc_df['{}일전 종가'.format(s)] = test_sc_df['종가'].shift(s)
+    # test_sc_df['{}일전 종가'.format(s)] = test_sc_df['종가'].shift(s)
     test_sc_df['{}일전 거래량'.format(s)] = test_sc_df['거래량'].shift(s)
 
 
@@ -112,14 +114,14 @@ Y_train = train_sc_df.dropna()[['종가']]
 
 # print(Y_train)
 
-today = test_sc_df.dropna().drop(['5일전 시작가', '5일전 고가', '5일전 저가', '5일전 종가', '5일전 거래량'], axis=1)
+# today = test_sc_df.dropna().drop(['5일전 시작가', '5일전 고가', '5일전 저가', '5일전 종가', '5일전 거래량'], axis=1)
 # today = today[-1]
-today = today.values
-today = today[-1]
+# today = today.values
+# today = today[-1]
 
-today = today.reshape(1, sequence_length*5, 1)
-print("today")
-print(today)
+# today = today.reshape(1, sequence_length*5, 1)
+# print("today")
+# print(today)
 
 
 
@@ -141,8 +143,8 @@ Y_train = Y_train.values
 # print(Y_train)
 Y_test = Y_test.values
 
-X_train_t = X_train.reshape(X_train.shape[0], sequence_length*5, 1)
-X_test_t = X_test.reshape(X_test.shape[0], sequence_length*5, 1)
+X_train_t = X_train.reshape(X_train.shape[0], sequence_length*4, 1)
+X_test_t = X_test.reshape(X_test.shape[0], sequence_length*4, 1)
 
 print("최종 DATA")
 print(type(X_train_t))
@@ -155,12 +157,17 @@ print(X_train_t)
 K.clear_session()
 
 model = Sequential() # Sequential Model
-model.add(LSTM(60, input_shape=(sequence_length*5, 1)))# (timestep, feature)
+model.add(LSTM(200, input_shape=(sequence_length*4, 1)))# (timestep, feature)
+# model.add(Dropout(0.5))
 model.add(Dense(1)) # output = 1
-model.compile(loss='mean_squared_error', optimizer='adam')
+
+# loss = losses.mean_absolute_percentage_error()
+
+adam = optimizers.adam(learning_rate=0.01)
+model.compile(loss='mean_squared_error', optimizer=adam)
 
 # loss를 모니터링해서 patience만큼 연속으로 loss률이 떨어지지 않으면 훈련을 멈춘다.
-early_stop = [EarlyStopping(monitor='val_loss', patience=20, verbose=1), ModelCheckpoint(filepath='best_model_close', monitor='val_loss', save_best_only=True)]
+early_stop = [EarlyStopping(monitor='val_loss', patience=10, verbose=1), ModelCheckpoint(filepath='best_model_close', monitor='val_loss', save_best_only=True)]
 
 # history=model.fit(X_train_t, Y_train, epochs=100, batch_size=30, verbose=1, callbacks=[early_stop])
 

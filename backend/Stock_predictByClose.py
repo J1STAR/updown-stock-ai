@@ -19,6 +19,8 @@ from keras.callbacks import EarlyStopping
 from keras.callbacks import ModelCheckpoint
 from keras.models import load_model
 
+from keras import optimizers
+
 import requests
 
 tf.compat.v1.set_random_seed(777)
@@ -64,7 +66,6 @@ plt.xlabel('date')
 plt.ylabel('close')
 plt.legend(['train', 'test'])
 
-plt.show()
 
 # print("학습데이터")
 # print(train)
@@ -109,10 +110,19 @@ X_train = X_train.values
 X_test = X_test.values
 
 Y_train = Y_train.values
+print(len(Y_train))
 # print("Y_train")
 # print(type(Y_train))
 # print(Y_train)
 Y_test = Y_test.values
+
+print(len(Y_test))
+tmp = len(Y_test)%5
+if tmp != 0:
+    Y_test = Y_test[tmp:]
+print(len(Y_test))
+
+X_test = X_test[tmp:]
 
 X_train_t = X_train.reshape(X_train.shape[0], sequence_length, 1)
 X_test_t = X_test.reshape(X_test.shape[0], sequence_length, 1)
@@ -128,19 +138,22 @@ X_test_t = X_test.reshape(X_test.shape[0], sequence_length, 1)
 K.clear_session()
 
 model = Sequential() # Sequential Model
-model.add(LSTM(20, input_shape=(sequence_length, 1)))# (timestep, feature)
-# model.add(Dense(100))
+model.add(LSTM(20, batch_input_shape=(5, sequence_length, 1), stateful=True, return_sequences=True))# (timestep, feature)
+model.add(LSTM(20, input_shape=(sequence_length, 1), batch_size=5, stateful=True, return_sequences=True))# model.add(Dense(100))
+model.add(LSTM(20, input_shape=(sequence_length, 1), batch_size=5, stateful=True))
 # model.add(Dense(100))
 # model.add(Dropout(0.1))
 model.add(Dense(1)) # output = 1
-model.compile(loss='mean_squared_error', optimizer='adam')
+
+adam = optimizers.adam(learning_rate=0.01)
+model.compile(loss='mean_squared_error', optimizer=adam)
 
 # loss를 모니터링해서 patience만큼 연속으로 loss률이 떨어지지 않으면 훈련을 멈춘다.
-# early_stop = [EarlyStopping(monitor='val_loss', patience=100, verbose=1), ModelCheckpoint(filepath='best_model_close', monitor='val_loss', save_best_only=True)]
+early_stop = [EarlyStopping(monitor='val_loss', patience=10, verbose=1), ModelCheckpoint(filepath='best_model_close', monitor='val_loss', save_best_only=True)]
 
 # history=model.fit(X_train_t, Y_train, epochs=100, batch_size=30, verbose=1, callbacks=[early_stop])
 
-history = model.fit(X_train_t, Y_train, epochs=100, verbose=2, batch_size=5, validation_data=(X_test_t, Y_test))
+history = model.fit(X_train_t, Y_train, epochs=1000, verbose=2, batch_size=5, validation_data=(X_test_t, Y_test), callbacks=early_stop)
 
 # Y_pred = model.predict(X_test_t)
 
@@ -169,11 +182,11 @@ plt.legend(["Training Loss", "Test Loss"])
 plt.xlabel("Epoch")
 plt.ylabel("Loss Score")
 
-Y_pred = model.predict(X_test_t)
+Y_pred = model.predict(X_test_t , batch_size=5)
 
 best_model = load_model('best_model_close')
 
-Y_pred_best = best_model.predict(X_test_t)
+Y_pred_best = best_model.predict(X_test_t, batch_size=5)
 
 
 plt.figure(3)
@@ -186,7 +199,7 @@ plt.plot(count, Y_pred, "b-")
 
 plt.legend(["Y_test", "Y_pred_by_close"])
 
-Y_pred = model.predict(X_test_t)
+Y_pred = model.predict(X_test_t, batch_size=5)
 
 plt.figure(4)
 #
