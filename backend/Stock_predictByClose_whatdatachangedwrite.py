@@ -77,8 +77,7 @@ if __name__ == '__main__':
                       stock_info['high_price'], stock_info['low_price'],
                       stock_info['closing_price'], stock_info['volume']]
        pre_data_list.append(pre_dataset)
-   df_stock_info = pd.DataFrame(pre_data_list,
-                                columns =['date', 'open', 'high', 'low', 'close', 'volume'])
+   df_stock_info = pd.DataFrame(pre_data_list, columns =['date', 'open', 'high', 'low', 'close', 'volume'])
    #dataframe은 pandas의 기본 자료구조로 2차원 배열 또는 리스트,
    #data table 전체를 포함하는 object이다.
 
@@ -276,6 +275,8 @@ model.add(LSTM(20, input_shape=(sequence_length, 1)))# (timestep, feature)
 # 가중치 규제는 빼자 batch size는 10-20, unit은 sequence length보다는 커야
 # 몇일 전 ; 최근 12일꺼 확인
 
+
+
 #@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 #1. 검증셋과 시험셋으로는 가중치 갱신이 일어나지 않습니다.
 #2. 검증셋은 모델을 튜닝할 때 사용합니다. 하이퍼 파라미터를 찾는다던지,
@@ -308,9 +309,6 @@ model.add(LSTM(20, input_shape=(sequence_length, 1)))# (timestep, feature)
 제가 데이터 사이언스는 아니지만, 세가지 데이터셋 중에 가장 중요한 것을 선택하라면, 바로 "검증셋"일 겁니다. 
 우리는 시험셋에 잘 평가받는 모델을 만드는 것이 목표가 아니라, 실전에도 잘 운용될 수 있는 모델을 만드는 것이 목표이니깐요.
 '''
-
-
-
 #dense에 대해선 여기 url 참고
 #https://tykimos.github.io/2017/04/09/RNN_Layer_Talk/
 
@@ -337,11 +335,6 @@ model.compile(loss='mean_squared_error', optimizer='adam')
 # loss를 모니터링해서 patience만큼 연속으로 loss률이 떨어지지 않으면 훈련을 멈춘다.
 early_stop = [EarlyStopping(monitor='val_loss', patience=20, verbose=1),
 
-'''
-keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=0, patience=0, verbose=0, mode='auto')
-'''
-
-
 #학습을 하면 loss 오차가 줄어야 over training
 #조기종료 : drop out 가중치 제한  patience : loss율이 0.000  연속으로 몇번 떨어지지 않을떄까지 버티는 것 10 9 8 7 계속 10번 반복되면 개선불가 stop
 
@@ -356,31 +349,30 @@ ModelCheckpoint(filepath='best_model_close', monitor='val_loss', save_best_only=
 #epoch : 반복횟수 batch size : 에러가지고 가중치 개선 에러를 어느 주기마다 개선할건지 보는
 #것  batch size가 1이면 하나의 케이스 오차 있으면 바로 적용 한번에 30개
 
-history = model.fit(X_train_t, Y_train, epochs=1000, verbose=2, batch_size=30,
-                    validation_data=(X_test_t, Y_test), callbacks=early_stop)
-#fit함수에서 batch를 선택할 때는 앞에서부터 순차적으로 고르는지 랜덤하게 고르는지 궁금합니다.
-#랜덤하다면 (training set size / batch size) 번 만큼 batch를 선택할 텐데,
-#  각각이 독립적으로 랜덤하게 선택되는지 궁금합니다.
+history = model.fit(X_train_t, Y_train,
+                    epochs=800, verbose=2, batch_size=10, validation_data=(X_test_t, Y_test),
+                    callbacks=early_stop)
+'''
+fit 함수 인자로 shuffle 이라는 옵션이 있습니다. 
+이 옵션을 활성화하면 랜덤하게 적용이 될 것 같아요~ 
+두번째 질문에서는 shuffle은 매 에포크마다 처음에 한 번 섞어주는 것이기에 
+한 에포크내에서 이미 사용된 배치가 또 사용되는 일은 없을 듯 합니다~
 
-#model.fit(x, y, batch_size=32, epochs=10)
-#x : 입력 데이터
-#y : 라벨 값(답이라 할 수 있다)
-#batch_size : 몇 개의 샘플로 가중치를 갱신할 것인지 지정
-#epochs : 학습 반복 횟수
-
-#가중치 : 그 층의 파라미터
-#학습 : 주어진 입력을 정확한 타깃에 매핑하기 위해 신경망의
-#모든 층에 있는 가중치 값을 찾는 것 의미
-
-#손실함수 : 신경망의 출력이 기대하는 것보다 얼마나 벗어낫는지 측정
-#진짜 타깃과 예측을 비교
-# 딥러닝 :신경망의 출력점수를 피드백 신호로 사용하여 현재 샘플의
-#손실점수가 감소되는 방향으로 가중치 값을 조금씩 수정하는 것
-# 그 역할을 Optimizer가 담당
+시계열 데이터므로 shuffle하면 안된다
+'''
 
 #unit batch epoch 이전 몇일 치 sequence length,
 # Y_pred = model.predict(X_test_t)
 
+'''
+케라스에서 학습시킬 때 fit 함수를 사용합니다. 
+이 함수의 반환 값으로 히스토리 객체를 얻을 수 있는데, 이 객체는 다음의 정보를 담고 있습니다.
+
+매 에포크 마다의 훈련 손실값 (loss)
+매 에포크 마다의 훈련 정확도 (acc)
+매 에포크 마다의 검증 손실값 (val_loss)
+매 에포크 마다의 검증 정확도 (val_acc)
+'''
 training_loss = history.history["loss"]
 test_loss = history.history["val_loss"]
 
