@@ -26,7 +26,7 @@ import requests
 tf.compat.v1.set_random_seed(777)
 
 if __name__ == '__main__':
-   res = requests.get("http://j1star.ddns.net:8000/stock/corp/067280")
+   res = requests.get("http://j1star.ddns.net:8000/stock/corp/005930")
    data = res.json()
    stock_info_list = data['corp']['stock_info']
    # date open high low close volumn
@@ -49,8 +49,8 @@ df_stock_info.set_index('date')
 #
 
 maxlength = len(df_stock_info)
-train = df_stock_info.loc[maxlength-960:maxlength-241, ['close']]
-test = df_stock_info.loc[maxlength-245:, ['close']]
+train = df_stock_info.loc[maxlength-(480+sequence_length):maxlength-121, ['close']]
+test = df_stock_info.loc[maxlength-125:, ['close']]
 
 print(train)
 print(test)
@@ -74,7 +74,7 @@ plt.legend(['train', 'test'])
 
 
 
-sc = MinMaxScaler(feature_range=(-1, 1))
+sc = MinMaxScaler()
 
 train_sc = sc.fit_transform(train)
 test_sc = sc.transform(test)
@@ -138,18 +138,18 @@ X_test_t = X_test.reshape(X_test.shape[0], sequence_length, 1)
 K.clear_session()
 
 model = Sequential() # Sequential Model
-model.add(LSTM(20, batch_input_shape=(5, sequence_length, 1), stateful=True, return_sequences=True))# (timestep, feature)
-model.add(LSTM(20, input_shape=(sequence_length, 1), batch_size=5, stateful=True, return_sequences=True))# model.add(Dense(100))
-model.add(LSTM(20, input_shape=(sequence_length, 1), batch_size=5, stateful=True))
+model.add(LSTM(20, input_shape=(sequence_length, 1)))# (timestep, feature)
+# model.add(LSTM(20, input_shape=(sequence_length, 1), batch_size=5, stateful=True, return_sequences=True))# model.add(Dense(100))
+# model.add(LSTM(20, input_shape=(sequence_length, 1), batch_size=5, stateful=True))
 # model.add(Dense(100))
 # model.add(Dropout(0.1))
 model.add(Dense(1)) # output = 1
 
-adam = optimizers.adam(learning_rate=0.01)
+adam = optimizers.adam(learning_rate=0.0001)
 model.compile(loss='mean_squared_error', optimizer=adam)
 
 # loss를 모니터링해서 patience만큼 연속으로 loss률이 떨어지지 않으면 훈련을 멈춘다.
-early_stop = [EarlyStopping(monitor='val_loss', patience=10, verbose=1), ModelCheckpoint(filepath='best_model_close', monitor='val_loss', save_best_only=True)]
+early_stop = [EarlyStopping(monitor='val_loss', patience=20, verbose=1), ModelCheckpoint(filepath='best_model_close', monitor='val_loss', save_best_only=True)]
 
 # history=model.fit(X_train_t, Y_train, epochs=100, batch_size=30, verbose=1, callbacks=[early_stop])
 

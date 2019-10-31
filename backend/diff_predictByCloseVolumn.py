@@ -147,7 +147,7 @@ early_stop = [EarlyStopping(monitor='val_loss', patience=50, verbose=1), ModelCh
 
 # history=model.fit(X_train_t, Y_train, epochs=100, batch_size=30, verbose=1, callbacks=[early_stop])
 
-history = model.fit(X_train_t, Y_train, epochs=1000, verbose=2, batch_size=5, validation_data=(X_test_t, Y_test), callbacks=early_stop)
+history = model.fit(X_train_t, Y_train, epochs=100000, verbose=2, batch_size=120, validation_data=(X_test_t, Y_test), callbacks=early_stop)
 
 # Y_pred = model.predict(X_test_t)
 

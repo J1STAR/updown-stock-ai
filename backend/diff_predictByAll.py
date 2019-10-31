@@ -44,7 +44,7 @@ if __name__ == '__main__':
 
 print(df_stock_info)
 
-sequence_length=5
+sequence_length=3
 
 df_stock_info.set_index('date')
 # split_date = pd.Timestamp('2011-01-01')
@@ -53,8 +53,9 @@ df_stock_info.set_index('date')
 #
 
 maxlength = len(df_stock_info)
-train = df_stock_info.loc[maxlength-(960+sequence_length):maxlength-241, ['open', 'high', 'low', 'close', 'volume']]
-test = df_stock_info.loc[maxlength-(240+sequence_length):, ['open', 'high', 'low', 'close','volume']]
+train = df_stock_info.loc[maxlength-(960+sequence_length):maxlength-241, ['high', 'low', 'close', 'volume']]
+
+test = df_stock_info.loc[maxlength-(240+sequence_length):, ['high', 'low', 'close','volume']]
 
 Y_train = df_stock_info.loc[maxlength-960:maxlength-241, ['diff']]
 Y_test = df_stock_info.loc[maxlength-240:, ['diff']]
@@ -93,8 +94,8 @@ Y_test = sc2.transform(Y_test)
 print("train_sc")
 print(train_sc)
 
-train_sc_df = pd.DataFrame(train_sc, columns=['시작가', '고가', '저가', '종가', '거래량'], index=train.index)
-test_sc_df = pd.DataFrame(test_sc, columns=['시작가', '고가', '저가', '종가', '거래량'], index=test.index)
+train_sc_df = pd.DataFrame(train_sc, columns=['고가', '저가', '종가', '거래량'], index=train.index)
+test_sc_df = pd.DataFrame(test_sc, columns=['고가', '저가', '종가', '거래량'], index=test.index)
 
 # print("train_sc_df")
 # print(train_sc_df)
@@ -102,13 +103,13 @@ test_sc_df = pd.DataFrame(test_sc, columns=['시작가', '고가', '저가', '�
 
 
 for s in range(1, sequence_length+1):
-    train_sc_df['{}일전 시작가'.format(s)] = train_sc_df['시작가'].shift(s)
+    # train_sc_df['{}일전 시작가'.format(s)] = train_sc_df['시작가'].shift(s)
     train_sc_df['{}일전 고가'.format(s)] = train_sc_df['고가'].shift(s)
     train_sc_df['{}일전 저가'.format(s)] = train_sc_df['저가'].shift(s)
     train_sc_df['{}일전 종가'.format(s)] = train_sc_df['종가'].shift(s)
 
     train_sc_df['{}일전 거래량'.format(s)] = train_sc_df['거래량'].shift(s)
-    test_sc_df['{}일전 시작가'.format(s)] = test_sc_df['시작가'].shift(s)
+    # test_sc_df['{}일전 시작가'.format(s)] = test_sc_df['시작가'].shift(s)
     test_sc_df['{}일전 고가'.format(s)] = test_sc_df['고가'].shift(s)
     test_sc_df['{}일전 저가'.format(s)] = test_sc_df['저가'].shift(s)
     test_sc_df['{}일전 종가'.format(s)] = test_sc_df['종가'].shift(s)
@@ -116,7 +117,7 @@ for s in range(1, sequence_length+1):
     test_sc_df['{}일전 거래량'.format(s)] = test_sc_df['거래량'].shift(s)
 
 
-X_train = train_sc_df.dropna().drop(['시작가', '고가', '저가', '종가','거래량'], axis=1)
+X_train = train_sc_df.dropna().drop(['고가', '저가', '종가','거래량'], axis=1)
 # Y_train = train_sc_df.dropna()[['종가']]
 # dropna()가 none이 포함되어있는 부분을 제외해버리기때문에 앞의 몇일이 짤린다.
 
@@ -134,7 +135,7 @@ X_train = train_sc_df.dropna().drop(['시작가', '고가', '저가', '종가','
 
 
 
-X_test = test_sc_df.dropna().drop(['시작가', '고가', '저가', '종가','거래량'], axis=1)
+X_test = test_sc_df.dropna().drop(['고가', '저가', '종가','거래량'], axis=1)
 # Y_test = test_sc_df.dropna()[['종가']]
 
 # print("X_test")
@@ -152,8 +153,16 @@ X_test = X_test.values
 # print(Y_train)
 # Y_test = Y_test.values
 
-X_train_t = X_train.reshape(X_train.shape[0], sequence_length*5, 1)
-X_test_t = X_test.reshape(X_test.shape[0], sequence_length*5, 1)
+print(len(Y_test))
+tmp = len(Y_test)%sequence_length
+if tmp != 0:
+    Y_test = Y_test[tmp:]
+print(len(Y_test))
+
+X_test = X_test[tmp:]
+
+X_train_t = X_train.reshape(X_train.shape[0], sequence_length*4, 1)
+X_test_t = X_test.reshape(X_test.shape[0], sequence_length*4, 1)
 
 # print("최종 DATA")
 # print(type(X_train_t))
@@ -166,15 +175,15 @@ X_test_t = X_test.reshape(X_test.shape[0], sequence_length*5, 1)
 K.clear_session()
 
 model = Sequential() # Sequential Model
-model.add(LSTM(200, input_shape=(sequence_length*5, 1)))# (timestep, feature)
+model.add(LSTM(200, input_shape=(sequence_length*4, 1), batch_size=5, stateful=True))# (timestep, feature)
 model.add(Dense(1)) # output = 1
 
-adam = optimizers.adam(learning_rate=0.01)
+adam = optimizers.adam(learning_rate=0.00001)
 
 model.compile(loss='mean_squared_error', optimizer=adam)
 
 # loss를 모니터링해서 patience만큼 연속으로 loss률이 떨어지지 않으면 훈련을 멈춘다.
-early_stop = [EarlyStopping(monitor='val_loss', patience=20, verbose=1), ModelCheckpoint(filepath='best_model_close', monitor='val_loss', save_best_only=True)]
+early_stop = [EarlyStopping(monitor='val_loss', patience=30, verbose=1), ModelCheckpoint(filepath='best_model_close', monitor='val_loss', save_best_only=True)]
 
 # history=model.fit(X_train_t, Y_train, epochs=100, batch_size=30, verbose=1, callbacks=[early_stop])
 
@@ -207,11 +216,11 @@ plt.legend(["Training Loss", "Test Loss"])
 plt.xlabel("Epoch")
 plt.ylabel("Loss Score")
 
-Y_pred = model.predict(X_test_t)
+Y_pred = model.predict(X_test_t, batch_size=5)
 
 best_model = load_model('best_model_close')
-
-Y_pred_best = best_model.predict(X_test_t)
+#
+Y_pred_best = best_model.predict(X_test_t, batch_size=5)
 
 
 plt.figure(3)
@@ -224,7 +233,7 @@ plt.plot(count, sc2.inverse_transform(Y_pred), "b-")
 
 plt.legend(["Y_test", "Y_pred_by_close"])
 
-Y_pred = model.predict(X_test_t)
+# Y_pred = model.predict(X_test_t, batch_size=5)
 
 plt.figure(4)
 #
@@ -237,12 +246,26 @@ plt.legend(["Y_test", "Y_pred_best"])
 # print(Y_test)
 # print(Y_pred)
 
-# count = 0
-# best_count = 0
-# for val in range(1, len(Y_test)):
-#     test_val = Y_test[val]-Y_test[val-1]
-#     pred_val = Y_pred[val]-Y_test[val-1]
-#     pred_best_val = Y_pred_best[val]-Y_test[val-1]
+count = 0
+best_count = 0
+
+Y_test = sc2.inverse_transform(Y_test)
+Y_pred = sc2.inverse_transform(Y_pred)
+Y_pred_best = sc2.inverse_transform(Y_pred_best)
+for val in range(1, len(Y_test)):
+    if Y_test[val] > 0:
+        if Y_pred[val] > 0:
+            count += 1
+        if Y_pred_best[val] > 0:
+            best_count += 1
+    if Y_test[val] < 0:
+        if Y_pred[val] < 0:
+            count+=1
+        if Y_pred_best[val] < 0:
+            best_count+=1
+    # test_val = Y_test[val]-Y_test[val-1]
+    # pred_val = Y_pred[val]-Y_test[val-1]
+    # pred_best_val = Y_pred_best[val]-Y_test[val-1]
 #     if test_val > 0:
 #         test_val = 1
 #     else:
@@ -261,10 +284,10 @@ plt.legend(["Y_test", "Y_pred_best"])
 #     if test_val == pred_val:
 #         count+=1
 #
-# print("count = ", count)
-# print("총 개수 = ", len(Y_test))
-# print("모델 정답률 : ", count/len(Y_test))
-# print("best_count = ", best_count)
-# print("베스트 모델 정답률 : ", best_count/len(Y_test))
+print("count = ", count)
+print("총 개수 = ", len(Y_test))
+print("모델 정답률 : ", count/len(Y_test))
+print("best_count = ", best_count)
+print("베스트 모델 정답률 : ", best_count/len(Y_test))
 
 plt.show()

@@ -13,19 +13,20 @@ from keras.models import Sequential
 from keras.layers import Dense
 import keras.backend as K
 from keras.callbacks import EarlyStopping
+from keras.callbacks import ModelCheckpoint
 
 import requests
 
 if __name__ == '__main__':
-   res = requests.get("http://j1star.ddns.net:8000/stock/067630")
+   res = requests.get("http://j1star.ddns.net:8000/stock/corp/067280")
    data = res.json()
    stock_info_list = data['corp']['stock_info']
    # date open high low close volumn
    pre_data_list = []
    for stock_info in stock_info_list:
-       pre_dataset = [stock_info['date'][:10], stock_info['open_price'], stock_info['high_price'], stock_info['low_price'], stock_info['closing_price'], stock_info['volumn']]
+       pre_dataset = [stock_info['date'][:10], stock_info['open_price'], stock_info['high_price'], stock_info['low_price'], stock_info['closing_price'], stock_info['volume']]
        pre_data_list.append(pre_dataset)
-   df_stock_info = pd.DataFrame(pre_data_list, columns =['date', 'open', 'high', 'low', 'close', 'volumn'])
+   df_stock_info = pd.DataFrame(pre_data_list, columns =['date', 'open', 'high', 'low', 'close', 'volume'])
    df_stock_info = df_stock_info[df_stock_info.open != 0]
    # print(df_stock_info)
 
@@ -38,15 +39,15 @@ df_stock_info.set_index('date')
 #
 
 
-sequence_length=12
+sequence_length=5
 maxlength = len(df_stock_info)
 
 
-Y_train = df_stock_info.loc[maxlength-240+sequence_length:maxlength-61, ['close']]
-Y_test = df_stock_info.loc[maxlength-60+sequence_length:, ['close']]
+Y_train = df_stock_info.loc[maxlength-480+sequence_length:maxlength-121, ['close']]
+Y_test = df_stock_info.loc[maxlength-120+sequence_length:, ['close']]
 # print(Y_train)
-train = df_stock_info.loc[maxlength-240:maxlength-61, ['open']]
-test = df_stock_info.loc[maxlength-60:, ['open']]
+train = df_stock_info.loc[maxlength-480:maxlength-121, ['open']]
+test = df_stock_info.loc[maxlength-120:, ['open']]
 
 # print(train)
 # print(test)
@@ -134,16 +135,16 @@ model.add(Dense(1)) # output = 1
 model.compile(loss='mean_squared_error', optimizer='adam')
 
 # loss를 모니터링해서 patience만큼 연속으로 loss률이 떨어지지 않으면 훈련을 멈춘다.
-early_stop = EarlyStopping(monitor='loss', patience=10, verbose=1)
+early_stop = [EarlyStopping(monitor='loss', patience=20, verbose=1), ModelCheckpoint(filepath='best_model_diff', monitor='loss', save_best_only=True)]
 
 # history=model.fit(X_train_t, Y_train, epochs=100, batch_size=30, verbose=1, callbacks=[early_stop])
 
-history = model.fit(X_train_t, Y_train, epochs=1000, verbose=2, batch_size=10, validation_data=(X_test_t, Y_test), callbacks=[early_stop])
+history = model.fit(X_train_t, Y_train, epochs=1000, verbose=2, batch_size=10, callbacks=early_stop)
 
 # Y_pred = model.predict(X_test_t)
 
 training_loss = history.history["loss"]
-test_loss = history.history["val_loss"]
+# test_loss = history.history["val_loss"]
 
 print(type(training_loss))
 #
@@ -160,7 +161,7 @@ plt.figure(2)
 
 plt.plot(epoch_count, training_loss, "r--")
 
-plt.plot(epoch_count, test_loss, "b-")
+# plt.plot(epoch_count, test_loss, "b-")
 
 plt.legend(["Training Loss", "Test Loss"])
 

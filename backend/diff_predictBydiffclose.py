@@ -18,6 +18,7 @@ import keras.backend.tensorflow_backend as K
 from keras.callbacks import EarlyStopping
 from keras.callbacks import ModelCheckpoint
 from keras.models import load_model
+from keras import optimizers
 
 import requests
 
@@ -141,10 +142,12 @@ X_test_t = X_test.reshape(X_test.shape[0], sequence_length*2, 1)
 K.clear_session()
 
 model = Sequential() # Sequential Model
-model.add(LSTM(16, input_shape=(sequence_length*2, 1)))# (timestep, feature)
+model.add(LSTM(40, input_shape=(sequence_length*2, 1)))# (timestep, feature)
 # model.add(Dense(100))
 # model.add(Dense(100))
 model.add(Dense(1)) # output = 1
+
+adam = optimizers.adam(learning_rate=0.0001)
 model.compile(loss='mean_squared_error', optimizer='adam')
 
 # loss를 모니터링해서 patience만큼 연속으로 loss률이 떨어지지 않으면 훈련을 멈춘다.

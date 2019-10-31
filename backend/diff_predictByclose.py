@@ -48,14 +48,14 @@ df_stock_info.set_index('date')
 #
 
 maxlength = len(df_stock_info)
-train = df_stock_info.loc[maxlength-(960+sequence_length):maxlength-241, ['diff']]
-test = df_stock_info.loc[maxlength-(240+sequence_length):, ['diff']]
+train = df_stock_info.loc[maxlength-(480+sequence_length):maxlength-121, ['close']]
+test = df_stock_info.loc[maxlength-(120+sequence_length):, ['close']]
 
 print(train)
 print(test)
 
-
-
+Y_train = df_stock_info.loc[maxlength-480:maxlength-121, ['diff']]
+Y_test = df_stock_info.loc[maxlength-120:, ['diff']]
 # print(test)
 ax = train.plot()
 # print(ax)
@@ -77,31 +77,44 @@ sc = MinMaxScaler(feature_range=(-1,1))
 train_sc = sc.fit_transform(train)
 test_sc = sc.transform(test)
 
+sc2 = MinMaxScaler(feature_range=(-1,1))
+
+Y_train = sc2.fit_transform(Y_train)
+
+Y_test = sc2.transform(Y_test)
+
+print("Y_train")
+print(Y_train)
+
+
+
 
 
 print("train_sc")
 print(train_sc)
 
-train_sc_df = pd.DataFrame(train_sc, columns=['전일비'], index=train.index)
-test_sc_df = pd.DataFrame(test_sc, columns=['전일비'], index=test.index)
+train_sc_df = pd.DataFrame(train_sc, columns=['종가'], index=train.index)
+test_sc_df = pd.DataFrame(test_sc, columns=['종가'], index=test.index)
 
 # print("train_sc_df")
 # print(train_sc_df)
 
 for s in range(1, sequence_length+1):
-    train_sc_df['{}일전 전일비'.format(s)] = train_sc_df['전일비'].shift(s)
-    test_sc_df['{}일전 전일비'.format(s)] = test_sc_df['전일비'].shift(s)
+
+    train_sc_df['{}일전 종가'.format(s)] = train_sc_df['종가'].shift(s)
+
+    test_sc_df['{}일전 종가'.format(s)] = test_sc_df['종가'].shift(s)
 
 print(train_sc_df)
 
-X_train = train_sc_df.dropna().drop('전일비', axis=1)
-Y_train = train_sc_df.dropna()[['전일비']]
+X_train = train_sc_df.dropna().drop(['종가'], axis=1)
+# Y_train = train_sc_df.dropna()[['전일비']]
 # dropna()가 none이 포함되어있는 부분을 제외해버리기때문에 앞의 몇일이 짤린다.
 print(X_train)
 # print(Y_train)
 
-X_test = test_sc_df.dropna().drop('전일비', axis=1)
-Y_test = test_sc_df.dropna()[['전일비']]
+X_test = test_sc_df.dropna().drop(['종가'], axis=1)
+# Y_test = test_sc_df.dropna()[['전일비']]
 
 # print(X_train)
 
@@ -109,19 +122,11 @@ X_train = X_train.values
 # print(X_train)
 X_test = X_test.values
 
-Y_train = Y_train.values
+# Y_train = Y_train.values
 # print("Y_train")
 # print(type(Y_train))
 # print(Y_train)
-Y_test = Y_test.values
-
-print(len(Y_test))
-tmp = len(Y_test)%sequence_length
-if tmp != 0:
-    Y_test = Y_test[tmp:]
-print(len(Y_test))
-
-X_test = X_test[tmp:]
+# Y_test = Y_test.values
 
 X_train_t = X_train.reshape(X_train.shape[0], sequence_length, 1)
 X_test_t = X_test.reshape(X_test.shape[0], sequence_length, 1)
@@ -130,20 +135,6 @@ X_test_t = X_test.reshape(X_test.shape[0], sequence_length, 1)
 # print(type(X_train_t))
 # print(X_train_t)
 
-# print("X_train_t", X_train_t)
-val_X_train_t = X_train_t[-240:]
-# print("val_X_train_t", val_X_train_t)
-val_Y_train = Y_train[-240:]
-# print(len(val_X_train_t))
-# print(len(val_Y_train))
-# print(val_Y_train)
-X_train_t = X_train_t[:480]
-Y_train = Y_train[:480]
-
-print("X_train_t")
-
-print(len(X_train_t))
-print(len(Y_train))
 
 # LSTM 모델 만들기
 # Clear session
@@ -151,24 +142,20 @@ print(len(Y_train))
 K.clear_session()
 
 model = Sequential() # Sequential Model
-model.add(LSTM(20, input_shape=(sequence_length, 1)))# (timestep, feature)
-# model.add(LSTM(20, input_shape=(sequence_length, 1), batch_size=3, stateful=True))# model.add(Dense(100))
-# model.add(LSTM(20, input_shape=(sequence_length, 1), batch_size=5, stateful=True))
+model.add(LSTM(40, input_shape=(sequence_length, 1)))# (timestep, feature)
 # model.add(Dense(100))
 # model.add(Dense(100))
-# model.add(Dropout(0.2))
 model.add(Dense(1)) # output = 1
 
-adam = optimizers.adam(learning_rate=0.001)
-
-model.compile(loss='mean_squared_error', optimizer=adam)
+adam = optimizers.adam(learning_rate=0.0001)
+model.compile(loss='mean_squared_error', optimizer='adam')
 
 # loss를 모니터링해서 patience만큼 연속으로 loss률이 떨어지지 않으면 훈련을 멈춘다.
-early_stop = [EarlyStopping(monitor='loss', patience=30, verbose=1), ModelCheckpoint(filepath='best_model_diff', monitor='loss', save_best_only=True)]
+early_stop = [EarlyStopping(monitor='val_loss', patience=20, verbose=1), ModelCheckpoint(filepath='best_model_diff', monitor='val_loss', save_best_only=True)]
 
 # history=model.fit(X_train_t, Y_train, epochs=100, batch_size=30, verbose=1, callbacks=[early_stop])
 
-history = model.fit(X_train_t, Y_train, epochs=2000, verbose=2, batch_size=5, validation_data=(val_X_train_t, val_Y_train), callbacks=early_stop)
+history = model.fit(X_train_t, Y_train, epochs=1000, verbose=2, batch_size=5, validation_data=(X_test_t, Y_test), callbacks=early_stop)
 
 # Y_pred = model.predict(X_test_t)
 
@@ -209,12 +196,12 @@ plt.figure(3)
 count= range(1, len(Y_pred)+1)
 # print(Y_test)
 # print(Y_pred)
-plt.plot(count, sc.inverse_transform(Y_test), "r--")
-plt.plot(count, sc.inverse_transform(Y_pred), "b-")
+plt.plot(count, sc2.inverse_transform(Y_test), "r--")
+plt.plot(count, sc2.inverse_transform(Y_pred), "b-")
 
 plt.legend(["Y_test", "Y_pred_by_diff"])
 
-# Y_pred = model.predict(X_test_t)
+Y_pred = model.predict(X_test_t)
 
 plt.figure(4)
 #
@@ -224,20 +211,20 @@ plt.figure(4)
 # plt.plot(count, Y_test)
 # plt.plot(count, Y_pred_best)
 count= range(1, len(Y_pred)+1)
-plt.plot(count, sc.inverse_transform(Y_test))
-plt.plot(count, sc.inverse_transform(Y_pred_best))
+plt.plot(count, sc2.inverse_transform(Y_test))
+plt.plot(count, sc2.inverse_transform(Y_pred_best))
 #
 plt.legend(["Y_test", "Y_pred_best"])
 
-# plt.figure(5)
-#
-# c = range(1, len(Y_train)+1)
-# count= range(len(Y_train)+1, len(Y_train)+len(Y_pred)+1)
-# ax = plt.plot(c, Y_train)
-# plt.plot(count, sc.inverse_transform(Y_test))
-# plt.plot(count, sc.inverse_transform(Y_pred_best))
-#
-# plt.legend(["Y_train", "Y_test", "Y_pred_best"])
+plt.figure(5)
+
+c = range(1, len(Y_train)+1)
+count= range(len(Y_train)+1, len(Y_train)+len(Y_pred)+1)
+ax = plt.plot(c, Y_train)
+plt.plot(count, Y_test)
+plt.plot(count, Y_pred_best)
+
+plt.legend(["Y_train", "Y_test", "Y_pred_best"])
 
 
 # print(Y_test)
@@ -245,38 +232,28 @@ plt.legend(["Y_test", "Y_pred_best"])
 
 count = 0
 best_count = 0
-Y_test = sc.inverse_transform(Y_test)
-Y_pred = sc.inverse_transform(Y_pred)
-Y_pred_best = sc.inverse_transform(Y_pred_best)
 for val in range(1, len(Y_test)):
-    if Y_test[val] > 0:
-        if Y_pred[val] > 0:
-            count += 1
-        if Y_pred_best[val] > 0:
-            best_count += 1
-    if Y_test[val] < 0:
-        if Y_pred[val] < 0:
-            count+=1
-        if Y_pred_best[val] < 0:
-            best_count+=1
-#     if test_val > 0:
-#         test_val = 1
-#     else:
-#         test_val = -1
-#     if pred_val > 0:
-#         pred_val = 1
-#     else:
-#         pred_val = -1
-#     if pred_best_val > 0:
-#         pred_best_val = 1
-#     else:
-#         pred_best_val = -1
-#     if test_val == pred_best_val:
-#         best_count+=1
-#
-#     if test_val == pred_val:
-#         count+=1
-#
+    test_val = Y_test[val]-Y_test[val-1]
+    pred_val = Y_pred[val]-Y_test[val-1]
+    pred_best_val = Y_pred_best[val]-Y_test[val-1]
+    if test_val > 0:
+        test_val = 1
+    else:
+        test_val = -1
+    if pred_val > 0:
+        pred_val = 1
+    else:
+        pred_val = -1
+    if pred_best_val > 0:
+        pred_best_val = 1
+    else:
+        pred_best_val = -1
+    if test_val == pred_best_val:
+        best_count+=1
+
+    if test_val == pred_val:
+        count+=1
+
 print("count = ", count)
 print("총 개수 = ", len(Y_test))
 print("모델 정답률 : ", count/len(Y_test))

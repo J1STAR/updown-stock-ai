@@ -150,6 +150,14 @@ print("최종 DATA")
 print(type(X_train_t))
 print(X_train_t)
 
+val_X_train_t = X_train_t[-240:, :]
+val_Y_train = Y_train[-240:]
+
+print("val")
+print(val_X_train_t)
+print("Y")
+print(val_Y_train)
+
 
 # LSTM 모델 만들기
 # Clear session
@@ -163,7 +171,7 @@ model.add(Dense(1)) # output = 1
 
 # loss = losses.mean_absolute_percentage_error()
 
-adam = optimizers.adam(learning_rate=0.01)
+adam = optimizers.adam(learning_rate=0.0001)
 model.compile(loss='mean_squared_error', optimizer=adam)
 
 # loss를 모니터링해서 patience만큼 연속으로 loss률이 떨어지지 않으면 훈련을 멈춘다.
@@ -171,12 +179,12 @@ early_stop = [EarlyStopping(monitor='val_loss', patience=10, verbose=1), ModelCh
 
 # history=model.fit(X_train_t, Y_train, epochs=100, batch_size=30, verbose=1, callbacks=[early_stop])
 
-history = model.fit(X_train_t, Y_train, epochs=1000, verbose=2, batch_size=5, validation_data=(X_test_t, Y_test), callbacks=early_stop)
+history = model.fit(X_train_t, Y_train, epochs=1000, verbose=2, batch_size=5, validation_data=(val_X_train_t, val_Y_train), callbacks=early_stop)
 
 # Y_pred = model.predict(X_test_t)
 
 training_loss = history.history["loss"]
-test_loss = history.history["val_loss"]
+val_loss = history.history["val_loss"]
 
 # print(type(training_loss))
 #
@@ -193,7 +201,7 @@ plt.figure(2)
 
 plt.plot(epoch_count, training_loss, "r--")
 
-plt.plot(epoch_count, test_loss, "b-")
+plt.plot(epoch_count, val_loss, "b-")
 
 plt.legend(["Training Loss", "Test Loss"])
 
