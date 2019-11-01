@@ -91,7 +91,43 @@
 					sm12
 					md2
 			>
-				tttttttttttttttttttttttt
+				<v-timeline dense>
+					<v-timeline-item :color="'red'" :icon="'mdi-arrow-top-right-bold-outline'">
+						<v-card class="elevation-2">
+							<v-card-text>D+1 주가 상승 예측</v-card-text>
+						</v-card>
+					</v-timeline-item>
+					<v-timeline-item :icon="'mdi-arrow-bottom-right-bold-outline'">
+						<v-card class="elevation-2">
+							<v-card-text>D+2 주가 하락 예측</v-card-text>
+						</v-card>
+					</v-timeline-item>
+					<v-timeline-item :color="'red'" :icon="'mdi-arrow-top-right-bold-outline'">
+						<v-card class="elevation-2">
+							<v-card-text>D+3 주가 상승 예측</v-card-text>
+						</v-card>
+					</v-timeline-item>
+					<v-timeline-item :color="'red'" :icon="'mdi-arrow-top-right-bold-outline'">
+						<v-card class="elevation-2">
+							<v-card-text>D+4 주가 상승 예측</v-card-text>
+						</v-card>
+					</v-timeline-item>
+					<v-timeline-item :icon="'mdi-arrow-bottom-right-bold-outline'">
+						<v-card class="elevation-2">
+							<v-card-text>D+5 주가 하락 예측</v-card-text>
+						</v-card>
+					</v-timeline-item>
+					<v-timeline-item :icon="'mdi-arrow-bottom-right-bold-outline'">
+						<v-card class="elevation-2">
+							<v-card-text>D+6 주가 하락 예측</v-card-text>
+						</v-card>
+					</v-timeline-item>
+					<v-timeline-item :icon="'mdi-arrow-bottom-right-bold-outline'">
+						<v-card class="elevation-2">
+							<v-card-text>D+7 주가 하락 예측</v-card-text>
+						</v-card>
+					</v-timeline-item>
+				</v-timeline>
 			</v-flex>
 		</v-layout>
 	</v-container>
