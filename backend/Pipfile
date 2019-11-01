@@ -24,6 +24,7 @@ pandas-datareader = "*"
 html5lib = "*"
 beautifulsoup4 = "*"
 tensorflow-gpu = "*"
+tensorflow = "*"
 
 [requires]
 python_version = "3.6"

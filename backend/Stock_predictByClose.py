@@ -26,17 +26,15 @@ import requests
 tf.compat.v1.set_random_seed(777)
 
 if __name__ == '__main__':
-   res = requests.get("http://j1star.ddns.net:8000/stock/corp/005930")
+   res = requests.get("http://j1star.ddns.net:8000/stock/corp/067280")
    data = res.json()
    stock_info_list = data['corp']['stock_info']
-   # date open high low close volumn
    pre_data_list = []
    for stock_info in stock_info_list:
        pre_dataset = [stock_info['date'][:10], stock_info['open_price'], stock_info['high_price'], stock_info['low_price'], stock_info['closing_price'], stock_info['volume']]
        pre_data_list.append(pre_dataset)
    df_stock_info = pd.DataFrame(pre_data_list, columns =['date', 'open', 'high', 'low', 'close', 'volume'])
    df_stock_info = df_stock_info[df_stock_info.open != 0]
-   # print(df_stock_info)
 
 print(df_stock_info)
 
@@ -49,8 +47,8 @@ df_stock_info.set_index('date')
 #
 
 maxlength = len(df_stock_info)
-train = df_stock_info.loc[maxlength-(480+sequence_length):maxlength-121, ['close']]
-test = df_stock_info.loc[maxlength-125:, ['close']]
+train = df_stock_info.loc[maxlength-(960+sequence_length):maxlength-241, ['close']]
+test = df_stock_info.loc[maxlength-(240+sequence_length):, ['close']]
 
 print(train)
 print(test)
@@ -110,6 +108,7 @@ X_train = X_train.values
 X_test = X_test.values
 
 Y_train = Y_train.values
+print(Y_train.shape)
 print(len(Y_train))
 # print("Y_train")
 # print(type(Y_train))
@@ -117,7 +116,7 @@ print(len(Y_train))
 Y_test = Y_test.values
 
 print(len(Y_test))
-tmp = len(Y_test)%5
+tmp = len(Y_test)%sequence_length
 if tmp != 0:
     Y_test = Y_test[tmp:]
 print(len(Y_test))
@@ -125,11 +124,23 @@ print(len(Y_test))
 X_test = X_test[tmp:]
 
 X_train_t = X_train.reshape(X_train.shape[0], sequence_length, 1)
+print(X_train_t.shape)
 X_test_t = X_test.reshape(X_test.shape[0], sequence_length, 1)
+# print(X_test_t.shape)
 
-# print("최종 DATA")
-# print(type(X_train_t))
-# print(X_train_t)
+print("최종 DATA")
+print(type(X_train_t))
+print(X_train_t)
+
+# val_X_train_t = X_train_t[-120:]
+# print(val_X_train_t.shape)
+# print("val_X_train_t", val_X_train_t)
+# val_Y_train = Y_train[-120:]
+# print(len(val_X_train_t))
+# print(len(val_Y_train))
+# print(val_Y_train)
+# X_train_t = X_train_t[:240]
+# Y_train = Y_train[:240]
 
 
 # LSTM 모델 만들기
@@ -137,13 +148,9 @@ X_test_t = X_test.reshape(X_test.shape[0], sequence_length, 1)
 # 현재의 TF graph를 버리고 새로 만든다. 예전 모델, 레이어와의 충돌을 피한다.
 K.clear_session()
 
-model = Sequential() # Sequential Model
-model.add(LSTM(20, input_shape=(sequence_length, 1)))# (timestep, feature)
-# model.add(LSTM(20, input_shape=(sequence_length, 1), batch_size=5, stateful=True, return_sequences=True))# model.add(Dense(100))
-# model.add(LSTM(20, input_shape=(sequence_length, 1), batch_size=5, stateful=True))
-# model.add(Dense(100))
-# model.add(Dropout(0.1))
-model.add(Dense(1)) # output = 1
+model = Sequential()
+model.add(LSTM(20, input_shape=(sequence_length, 1)))
+model.add(Dense(1))
 
 adam = optimizers.adam(learning_rate=0.0001)
 model.compile(loss='mean_squared_error', optimizer=adam)
@@ -151,11 +158,8 @@ model.compile(loss='mean_squared_error', optimizer=adam)
 # loss를 모니터링해서 patience만큼 연속으로 loss률이 떨어지지 않으면 훈련을 멈춘다.
 early_stop = [EarlyStopping(monitor='val_loss', patience=20, verbose=1), ModelCheckpoint(filepath='best_model_close', monitor='val_loss', save_best_only=True)]
 
-# history=model.fit(X_train_t, Y_train, epochs=100, batch_size=30, verbose=1, callbacks=[early_stop])
-
 history = model.fit(X_train_t, Y_train, epochs=1000, verbose=2, batch_size=5, validation_data=(X_test_t, Y_test), callbacks=early_stop)
 
-# Y_pred = model.predict(X_test_t)
 
 training_loss = history.history["loss"]
 test_loss = history.history["val_loss"]
@@ -182,11 +186,11 @@ plt.legend(["Training Loss", "Test Loss"])
 plt.xlabel("Epoch")
 plt.ylabel("Loss Score")
 
-Y_pred = model.predict(X_test_t , batch_size=5)
+Y_pred = model.predict(X_test_t)
 
 best_model = load_model('best_model_close')
 
-Y_pred_best = best_model.predict(X_test_t, batch_size=5)
+Y_pred_best = best_model.predict(X_test_t)
 
 
 plt.figure(3)
@@ -194,12 +198,12 @@ plt.figure(3)
 count= range(1, len(Y_pred)+1)
 # print(Y_test)
 # print(Y_pred)
-plt.plot(count, Y_test, "r--")
-plt.plot(count, Y_pred, "b-")
+plt.plot(count, sc.inverse_transform(Y_test), "r--")
+plt.plot(count, sc.inverse_transform(Y_pred), "b-")
 
 plt.legend(["Y_test", "Y_pred_by_close"])
 
-Y_pred = model.predict(X_test_t, batch_size=5)
+# Y_pred = model.predict(X_test_t, batch_size=1)
 
 plt.figure(4)
 #
@@ -209,8 +213,8 @@ plt.figure(4)
 # plt.plot(count, Y_test)
 # plt.plot(count, Y_pred_best)
 count= range(1, len(Y_pred)+1)
-plt.plot(count, Y_test)
-plt.plot(count, Y_pred_best)
+plt.plot(count, sc.inverse_transform(Y_test))
+plt.plot(count, sc.inverse_transform(Y_pred_best))
 #
 plt.legend(["Y_test", "Y_pred_best"])
 
@@ -218,9 +222,9 @@ plt.figure(5)
 
 c = range(1, len(Y_train)+1)
 count= range(len(Y_train)+1, len(Y_train)+len(Y_pred)+1)
-ax = plt.plot(c, Y_train)
-plt.plot(count, Y_test)
-plt.plot(count, Y_pred_best)
+ax = plt.plot(c, sc.inverse_transform(Y_train))
+plt.plot(count, sc.inverse_transform(Y_test))
+plt.plot(count, sc.inverse_transform(Y_pred_best))
 
 plt.legend(["Y_train", "Y_test", "Y_pred_best"])
 

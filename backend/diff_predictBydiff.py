@@ -39,7 +39,7 @@ if __name__ == '__main__':
 
 print(df_stock_info)
 
-sequence_length=5
+sequence_length=28
 
 df_stock_info.set_index('date')
 # split_date = pd.Timestamp('2011-01-01')
@@ -48,8 +48,8 @@ df_stock_info.set_index('date')
 #
 
 maxlength = len(df_stock_info)
-train = df_stock_info.loc[maxlength-(960+sequence_length):maxlength-241, ['diff']]
-test = df_stock_info.loc[maxlength-(240+sequence_length):, ['diff']]
+train = df_stock_info.loc[maxlength-(480+sequence_length):maxlength-121, ['diff']]
+test = df_stock_info.loc[maxlength-(120+sequence_length):, ['diff']]
 
 print(train)
 print(test)
@@ -131,14 +131,14 @@ X_test_t = X_test.reshape(X_test.shape[0], sequence_length, 1)
 # print(X_train_t)
 
 # print("X_train_t", X_train_t)
-val_X_train_t = X_train_t[-240:]
+val_X_train_t = X_train_t[-120:]
 # print("val_X_train_t", val_X_train_t)
-val_Y_train = Y_train[-240:]
+val_Y_train = Y_train[-120:]
 # print(len(val_X_train_t))
 # print(len(val_Y_train))
 # print(val_Y_train)
-X_train_t = X_train_t[:480]
-Y_train = Y_train[:480]
+X_train_t = X_train_t[:240]
+Y_train = Y_train[:240]
 
 print("X_train_t")
 
@@ -151,24 +151,35 @@ print(len(Y_train))
 K.clear_session()
 
 model = Sequential() # Sequential Model
-model.add(LSTM(20, input_shape=(sequence_length, 1)))# (timestep, feature)
+model.add(LSTM(sequence_length, input_shape=(sequence_length, 1)))# (timestep, feature)
 # model.add(LSTM(20, input_shape=(sequence_length, 1), batch_size=3, stateful=True))# model.add(Dense(100))
 # model.add(LSTM(20, input_shape=(sequence_length, 1), batch_size=5, stateful=True))
+# model.add(Dense(units=20, activation='relu'))
 # model.add(Dense(100))
 # model.add(Dense(100))
 # model.add(Dropout(0.2))
 model.add(Dense(1)) # output = 1
 
-adam = optimizers.adam(learning_rate=0.001)
+adam = optimizers.adam(learning_rate=0.0005)
 
 model.compile(loss='mean_squared_error', optimizer=adam)
 
+# model = Sequential()
+# for i in range(2):
+#     model.add(LSTM(se, batch_input_shape=(1, sequence_length, 1), stateful=True, return_sequences=True))
+#     model.add(Dropout(0.2))
+# model.add(LSTM(32, batch_input_shape=(1, sequence_length, 1), stateful=True))
+# model.add(Dropout(0.2))
+# model.add(Dense(1))
+# adam = optimizers.adam(learning_rate=0.0001)
+# model.compile(loss='mean_squared_error', optimizer=adam)
+
 # loss를 모니터링해서 patience만큼 연속으로 loss률이 떨어지지 않으면 훈련을 멈춘다.
-early_stop = [EarlyStopping(monitor='loss', patience=30, verbose=1), ModelCheckpoint(filepath='best_model_diff', monitor='loss', save_best_only=True)]
+early_stop = [EarlyStopping(monitor='val_loss', patience=20, verbose=1), ModelCheckpoint(filepath='best_model_diff', monitor='val_loss', save_best_only=True)]
 
 # history=model.fit(X_train_t, Y_train, epochs=100, batch_size=30, verbose=1, callbacks=[early_stop])
 
-history = model.fit(X_train_t, Y_train, epochs=2000, verbose=2, batch_size=5, validation_data=(val_X_train_t, val_Y_train), callbacks=early_stop)
+history = model.fit(X_train_t, Y_train, epochs=1000, verbose=2, batch_size=5, validation_data=(val_X_train_t, val_Y_train), callbacks=early_stop)
 
 # Y_pred = model.predict(X_test_t)
 
@@ -238,48 +249,48 @@ plt.legend(["Y_test", "Y_pred_best"])
 # plt.plot(count, sc.inverse_transform(Y_pred_best))
 #
 # plt.legend(["Y_train", "Y_test", "Y_pred_best"])
-
-
-# print(Y_test)
-# print(Y_pred)
-
-count = 0
-best_count = 0
-Y_test = sc.inverse_transform(Y_test)
-Y_pred = sc.inverse_transform(Y_pred)
-Y_pred_best = sc.inverse_transform(Y_pred_best)
-for val in range(1, len(Y_test)):
-    if Y_test[val] > 0:
-        if Y_pred[val] > 0:
-            count += 1
-        if Y_pred_best[val] > 0:
-            best_count += 1
-    if Y_test[val] < 0:
-        if Y_pred[val] < 0:
-            count+=1
-        if Y_pred_best[val] < 0:
-            best_count+=1
-#     if test_val > 0:
-#         test_val = 1
-#     else:
-#         test_val = -1
-#     if pred_val > 0:
-#         pred_val = 1
-#     else:
-#         pred_val = -1
-#     if pred_best_val > 0:
-#         pred_best_val = 1
-#     else:
-#         pred_best_val = -1
-#     if test_val == pred_best_val:
-#         best_count+=1
 #
-#     if test_val == pred_val:
-#         count+=1
 #
-print("count = ", count)
-print("총 개수 = ", len(Y_test))
-print("모델 정답률 : ", count/len(Y_test))
-print("베스트 모델 정답률 : ", best_count/len(Y_test))
+# # print(Y_test)
+# # print(Y_pred)
+#
+# count = 0
+# best_count = 0
+# Y_test = sc.inverse_transform(Y_test)
+# Y_pred = sc.inverse_transform(Y_pred)
+# Y_pred_best = sc.inverse_transform(Y_pred_best)
+# for val in range(1, len(Y_test)):
+#     if Y_test[val] > 0:
+#         if Y_pred[val] > 0:
+#             count += 1
+#         if Y_pred_best[val] > 0:
+#             best_count += 1
+#     if Y_test[val] < 0:
+#         if Y_pred[val] < 0:
+#             count+=1
+#         if Y_pred_best[val] < 0:
+#             best_count+=1
+# #     if test_val > 0:
+# #         test_val = 1
+# #     else:
+# #         test_val = -1
+# #     if pred_val > 0:
+# #         pred_val = 1
+# #     else:
+# #         pred_val = -1
+# #     if pred_best_val > 0:
+# #         pred_best_val = 1
+# #     else:
+# #         pred_best_val = -1
+# #     if test_val == pred_best_val:
+# #         best_count+=1
+# #
+# #     if test_val == pred_val:
+# #         count+=1
+# #
+# print("count = ", count)
+# print("총 개수 = ", len(Y_test))
+# print("모델 정답률 : ", count/len(Y_test))
+# print("베스트 모델 정답률 : ", best_count/len(Y_test))
 
 plt.show()

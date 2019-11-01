@@ -31,7 +31,7 @@ pd.set_option('display.max_columns', 1000)
 pd.set_option('display.max_colwidth', -1)
 
 if __name__ == '__main__':
-   res = requests.get("http://j1star.ddns.net:8000/stock/corp/078340")
+   res = requests.get("http://j1star.ddns.net:8000/stock/corp/067280")
    data = res.json()
    stock_info_list = data['corp']['stock_info']
    # date open high low close volumn
@@ -94,16 +94,16 @@ test_sc_df = pd.DataFrame(test_sc, columns=['시작가', '고가', '저가', '�
 
 
 
-for s in range(2, sequence_length+2):
+for s in range(1, sequence_length+1):
     train_sc_df['{}일전 시작가'.format(s)] = train_sc_df['시작가'].shift(s)
     train_sc_df['{}일전 고가'.format(s)] = train_sc_df['고가'].shift(s)
     train_sc_df['{}일전 저가'.format(s)] = train_sc_df['저가'].shift(s)
-    # train_sc_df['{}일전 종가'.format(s)] = train_sc_df['종가'].shift(s)
+    train_sc_df['{}일전 종가'.format(s)] = train_sc_df['종가'].shift(s)
     train_sc_df['{}일전 거래량'.format(s)] = train_sc_df['거래량'].shift(s)
     test_sc_df['{}일전 시작가'.format(s)] = test_sc_df['시작가'].shift(s)
     test_sc_df['{}일전 고가'.format(s)] = test_sc_df['고가'].shift(s)
     test_sc_df['{}일전 저가'.format(s)] = test_sc_df['저가'].shift(s)
-    # test_sc_df['{}일전 종가'.format(s)] = test_sc_df['종가'].shift(s)
+    test_sc_df['{}일전 종가'.format(s)] = test_sc_df['종가'].shift(s)
     test_sc_df['{}일전 거래량'.format(s)] = test_sc_df['거래량'].shift(s)
 
 
@@ -143,20 +143,20 @@ Y_train = Y_train.values
 # print(Y_train)
 Y_test = Y_test.values
 
-X_train_t = X_train.reshape(X_train.shape[0], sequence_length*4, 1)
-X_test_t = X_test.reshape(X_test.shape[0], sequence_length*4, 1)
+X_train_t = X_train.reshape(X_train.shape[0], sequence_length*5, 1)
+X_test_t = X_test.reshape(X_test.shape[0], sequence_length*5, 1)
 
 print("최종 DATA")
 print(type(X_train_t))
 print(X_train_t)
 
-val_X_train_t = X_train_t[-240:, :]
-val_Y_train = Y_train[-240:]
+# val_X_train_t = X_train_t[-240:, :]
+# val_Y_train = Y_train[-240:]
 
-print("val")
-print(val_X_train_t)
-print("Y")
-print(val_Y_train)
+# print("val")
+# print(val_X_train_t)
+# print("Y")
+# print(val_Y_train)
 
 
 # LSTM 모델 만들기
@@ -165,7 +165,7 @@ print(val_Y_train)
 K.clear_session()
 
 model = Sequential() # Sequential Model
-model.add(LSTM(200, input_shape=(sequence_length*4, 1)))# (timestep, feature)
+model.add(LSTM(60, input_shape=(sequence_length*5, 1)))# (timestep, feature)
 # model.add(Dropout(0.5))
 model.add(Dense(1)) # output = 1
 
@@ -179,7 +179,7 @@ early_stop = [EarlyStopping(monitor='val_loss', patience=10, verbose=1), ModelCh
 
 # history=model.fit(X_train_t, Y_train, epochs=100, batch_size=30, verbose=1, callbacks=[early_stop])
 
-history = model.fit(X_train_t, Y_train, epochs=1000, verbose=2, batch_size=5, validation_data=(val_X_train_t, val_Y_train), callbacks=early_stop)
+history = model.fit(X_train_t, Y_train, epochs=1000, verbose=2, batch_size=5, validation_data=(X_test_t, Y_test), callbacks=early_stop)
 
 # Y_pred = model.predict(X_test_t)
 
