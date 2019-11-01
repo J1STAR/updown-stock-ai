@@ -85,13 +85,9 @@ for s in range(1, sequence_length+1):
 X_train = train_sc_df.dropna().drop('Scaled', axis=1)
 Y_train = train_sc_df.dropna()[['Scaled']]
 # dropna()가 none이 포함되어있는 부분을 제외해버리기때문에 앞의 몇일이 짤린다.
-# print(X_train)
-# print(Y_train)
 
 X_test = test_sc_df.dropna().drop('Scaled', axis=1)
 Y_test = test_sc_df.dropna()[['Scaled']]
-
-# print(X_train)
 
 X_train = X_train.values
 # print(X_train)
@@ -131,7 +127,7 @@ early_stop = [EarlyStopping(monitor='val_loss', patience=20, verbose=1), ModelCh
 
 # history=model.fit(X_train_t, Y_train, epochs=100, batch_size=30, verbose=1, callbacks=[early_stop])
 
-history = model.fit(X_train_t, Y_train, epochs=150, verbose=1, batch_size=10, validation_data=(X_test_t, Y_test), callbacks=early_stop)
+history = model.fit(X_train_t, Y_train, epochs=100, verbose=1, batch_size=10, validation_data=(X_test_t, Y_test), callbacks=early_stop)
 
 # Y_pred = model.predict(X_test_t)
 
