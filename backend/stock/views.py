@@ -78,7 +78,7 @@ class StockDetailView(APIView):
 
             response = serializer.data
 
-        return Response(None, status=status.HTTP_200_OK)
+        return Response(response, status=status.HTTP_200_OK)
 
 
 class StockBusinessView(APIView):
