@@ -9,6 +9,7 @@ from datetime import datetime
 from bs4 import BeautifulSoup
 import requests
 
+from .predict.predictClosingPriceByLastest10 import predict
 
 # Create your views here.
 class StockView(APIView):
@@ -35,6 +36,14 @@ class StockDetailView(APIView):
 
         serializer = StockSerializer(stock_detail)
         response = serializer.data
+
+        try:
+            pred_value = predict(code, response['corp']['stock_info'][-10:])
+            response['predict'] = pred_value
+            print(pred_value)
+        except:
+            print("Not Exist Model")
+
         return Response(response, status=status.HTTP_200_OK)
 
     def post(self, request, code=None):

@@ -21,9 +21,10 @@ from keras.models import load_model
 from keras import optimizers
 
 import requests
+from sklearn.externals import joblib
 
 tf.compat.v1.set_random_seed(777)
-corp_code = "067160"
+corp_code = "181710"
 
 if __name__ == '__main__':
     res = requests.get("http://j1star.ddns.net:8000/stock/corp/" + corp_code)
@@ -73,6 +74,7 @@ plt.legend(['train', 'test'])
 sc = MinMaxScaler()
 
 train_sc = sc.fit_transform(train)
+joblib.dump(sc, '../model/' + corp_code + '_close_scaler.pkl')
 test_sc = sc.transform(test)
 
 print("train_sc")
@@ -159,7 +161,7 @@ model.compile(loss='mean_squared_error', optimizer=adam)
 early_stop = [EarlyStopping(monitor='val_loss', patience=20, verbose=1),
               ModelCheckpoint(filepath='../model/' + corp_code + '_best_model_close.h5', monitor='val_loss', save_best_only=True)]
 
-history = model.fit(X_train_t, Y_train, epochs=1000, verbose=2, batch_size=512, validation_data=(X_test_t, Y_test),
+history = model.fit(X_train_t, Y_train, epochs=1000, verbose=2, batch_size=128, validation_data=(X_test_t, Y_test),
                     callbacks=early_stop)
 
 training_loss = history.history["loss"]
