@@ -5,10 +5,9 @@ import matplotlib.pyplot as plt
 
 import tensorflow as tf
 
-from pandas.tseries.offsets import  MonthEnd
+from pandas.tseries.offsets import MonthEnd
 
 from sklearn.preprocessing import MinMaxScaler
-
 
 from keras.layers import LSTM
 from keras.models import Sequential
@@ -24,21 +23,23 @@ from keras import optimizers
 import requests
 
 tf.compat.v1.set_random_seed(777)
+corp_code = "067160"
 
 if __name__ == '__main__':
-   res = requests.get("http://j1star.ddns.net:8000/stock/corp/067280")
-   data = res.json()
-   stock_info_list = data['corp']['stock_info']
-   pre_data_list = []
-   for stock_info in stock_info_list:
-       pre_dataset = [stock_info['date'][:10], stock_info['open_price'], stock_info['high_price'], stock_info['low_price'], stock_info['closing_price'], stock_info['volume']]
-       pre_data_list.append(pre_dataset)
-   df_stock_info = pd.DataFrame(pre_data_list, columns =['date', 'open', 'high', 'low', 'close', 'volume'])
-   df_stock_info = df_stock_info[df_stock_info.open != 0]
+    res = requests.get("http://j1star.ddns.net:8000/stock/corp/" + corp_code)
+    data = res.json()
+    stock_info_list = data['corp']['stock_info']
+    pre_data_list = []
+    for stock_info in stock_info_list:
+        pre_dataset = [stock_info['date'][:10], stock_info['open_price'], stock_info['high_price'],
+                       stock_info['low_price'], stock_info['closing_price'], stock_info['volume']]
+        pre_data_list.append(pre_dataset)
+    df_stock_info = pd.DataFrame(pre_data_list, columns=['date', 'open', 'high', 'low', 'close', 'volume'])
+    df_stock_info = df_stock_info[df_stock_info.open != 0]
 
-print(df_stock_info)
+print("len df stock info > ", len(df_stock_info))
 
-sequence_length=5
+sequence_length = 10
 
 df_stock_info.set_index('date')
 # split_date = pd.Timestamp('2011-01-01')
@@ -47,13 +48,12 @@ df_stock_info.set_index('date')
 #
 
 maxlength = len(df_stock_info)
-train = df_stock_info.loc[maxlength-(960+sequence_length):maxlength-241, ['close']]
-test = df_stock_info.loc[maxlength-(240+sequence_length):, ['close']]
+row = int(round(maxlength * 0.9))
+train = df_stock_info.loc[:row - 1, ['close']]
+test = df_stock_info.loc[row:, ['close']]
 
 print(train)
 print(test)
-
-
 
 # print(test)
 ax = train.plot()
@@ -64,12 +64,10 @@ plt.xlabel('date')
 plt.ylabel('close')
 plt.legend(['train', 'test'])
 
-
 # print("학습데이터")
 # print(train)
 # print("테스트데이터")
 # print(test)
-
 
 
 sc = MinMaxScaler()
@@ -86,7 +84,7 @@ test_sc_df = pd.DataFrame(test_sc, columns=['종가'], index=test.index)
 # print("train_sc_df")
 # print(train_sc_df)
 
-for s in range(1, sequence_length+1):
+for s in range(1, sequence_length + 1):
     train_sc_df['{}일전 종가'.format(s)] = train_sc_df['종가'].shift(s)
     test_sc_df['{}일전 종가'.format(s)] = test_sc_df['종가'].shift(s)
 
@@ -116,7 +114,7 @@ print(len(Y_train))
 Y_test = Y_test.values
 
 print(len(Y_test))
-tmp = len(Y_test)%sequence_length
+tmp = len(Y_test) % sequence_length
 if tmp != 0:
     Y_test = Y_test[tmp:]
 print(len(Y_test))
@@ -149,24 +147,27 @@ print(X_train_t)
 K.clear_session()
 
 model = Sequential()
-model.add(LSTM(20, input_shape=(sequence_length, 1)))
+model.add(LSTM(50, return_sequences=True, input_shape=(sequence_length, 1)))
+model.add(LSTM(64, return_sequences=True))
+model.add(LSTM(64, return_sequences=False))
 model.add(Dense(1))
 
 adam = optimizers.adam(learning_rate=0.0001)
 model.compile(loss='mean_squared_error', optimizer=adam)
 
 # loss를 모니터링해서 patience만큼 연속으로 loss률이 떨어지지 않으면 훈련을 멈춘다.
-early_stop = [EarlyStopping(monitor='val_loss', patience=20, verbose=1), ModelCheckpoint(filepath='best_model_close', monitor='val_loss', save_best_only=True)]
+early_stop = [EarlyStopping(monitor='val_loss', patience=20, verbose=1),
+              ModelCheckpoint(filepath='../model/' + corp_code + '_best_model_close.h5', monitor='val_loss', save_best_only=True)]
 
-history = model.fit(X_train_t, Y_train, epochs=1000, verbose=2, batch_size=5, validation_data=(X_test_t, Y_test), callbacks=early_stop)
-
+history = model.fit(X_train_t, Y_train, epochs=1000, verbose=2, batch_size=512, validation_data=(X_test_t, Y_test),
+                    callbacks=early_stop)
 
 training_loss = history.history["loss"]
 test_loss = history.history["val_loss"]
 
 print(type(training_loss))
 #
-epoch_count = range(1, len(training_loss)+1)
+epoch_count = range(1, len(training_loss) + 1)
 #
 # plt.plot(epoch_count, training_loss, "r--")
 # plt.plot(epoch_count, test_loss, "b-")
@@ -187,15 +188,14 @@ plt.xlabel("Epoch")
 plt.ylabel("Loss Score")
 
 Y_pred = model.predict(X_test_t)
-
-best_model = load_model('best_model_close')
+print("X_TEST_T > ", X_test_t)
+best_model = load_model('../model/' + corp_code + '_best_model_close.h5')
 
 Y_pred_best = best_model.predict(X_test_t)
 
-
 plt.figure(3)
 
-count= range(1, len(Y_pred)+1)
+count = range(1, len(Y_pred) + 1)
 # print(Y_test)
 # print(Y_pred)
 plt.plot(count, sc.inverse_transform(Y_test), "r--")
@@ -212,7 +212,7 @@ plt.figure(4)
 # ax = plt.plot(c, Y_train)
 # plt.plot(count, Y_test)
 # plt.plot(count, Y_pred_best)
-count= range(1, len(Y_pred)+1)
+count = range(1, len(Y_pred) + 1)
 plt.plot(count, sc.inverse_transform(Y_test))
 plt.plot(count, sc.inverse_transform(Y_pred_best))
 #
@@ -220,14 +220,13 @@ plt.legend(["Y_test", "Y_pred_best"])
 
 plt.figure(5)
 
-c = range(1, len(Y_train)+1)
-count= range(len(Y_train)+1, len(Y_train)+len(Y_pred)+1)
+c = range(1, len(Y_train) + 1)
+count = range(len(Y_train) + 1, len(Y_train) + len(Y_pred) + 1)
 ax = plt.plot(c, sc.inverse_transform(Y_train))
 plt.plot(count, sc.inverse_transform(Y_test))
 plt.plot(count, sc.inverse_transform(Y_pred_best))
 
 plt.legend(["Y_train", "Y_test", "Y_pred_best"])
-
 
 # print(Y_test)
 # print(Y_pred)
@@ -235,9 +234,9 @@ plt.legend(["Y_train", "Y_test", "Y_pred_best"])
 count = 0
 best_count = 0
 for val in range(1, len(Y_test)):
-    test_val = Y_test[val]-Y_test[val-1]
-    pred_val = Y_pred[val]-Y_test[val-1]
-    pred_best_val = Y_pred_best[val]-Y_test[val-1]
+    test_val = Y_test[val] - Y_test[val - 1]
+    pred_val = Y_pred[val] - Y_test[val - 1]
+    pred_best_val = Y_pred_best[val] - Y_test[val - 1]
     if test_val > 0:
         test_val = 1
     else:
@@ -251,14 +250,14 @@ for val in range(1, len(Y_test)):
     else:
         pred_best_val = -1
     if test_val == pred_best_val:
-        best_count+=1
+        best_count += 1
 
     if test_val == pred_val:
-        count+=1
+        count += 1
 
 print("count = ", count)
 print("총 개수 = ", len(Y_test))
-print("모델 정답률 : ", count/len(Y_test))
-print("베스트 모델 정답률 : ", best_count/len(Y_test))
+print("모델 정답률 : ", count / len(Y_test))
+print("베스트 모델 정답률 : ", best_count / len(Y_test))
 
 plt.show()
