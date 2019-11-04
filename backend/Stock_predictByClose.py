@@ -47,10 +47,10 @@ max_length = len(df_stock_info)
 train = df_stock_info.loc[max_length - 240:max_length - 61, ['close']]
 test = df_stock_info.loc[max_length - 60:, ['close']]
 
-print("@@@@@@train@@@@@@")
-print(train)
-print("@@@@@@test@@@@@@")
-print(test)
+# print("@@@@@@train@@@@@@")
+# print(train)
+# print("@@@@@@test@@@@@@")
+# print(test)
 
 # print(test)
 ax = train.plot()  # plot: x 와 y 의 2개 축을 기준으로 좌표를 찍듯이 그리는 컨셉을 가진 함수
@@ -127,7 +127,8 @@ early_stop = [EarlyStopping(monitor='val_loss', patience=20, verbose=1), ModelCh
 
 # history=model.fit(X_train_t, Y_train, epochs=100, batch_size=30, verbose=1, callbacks=[early_stop])
 
-history = model.fit(X_train_t, Y_train, epochs=100, verbose=1, batch_size=10, validation_data=(X_test_t, Y_test), callbacks=early_stop)
+# 100 or 150 and 10
+history = model.fit(X_train_t, Y_train, epochs=250, verbose=1, batch_size=5, validation_data=(X_test_t, Y_test), callbacks=early_stop)
 
 # Y_pred = model.predict(X_test_t)
 
