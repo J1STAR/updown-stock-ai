@@ -96,21 +96,33 @@
 						<template v-if="chartData[chartData.length-1][4] < predictStock">
 							<v-timeline-item :color="'red'" :icon="'mdi-arrow-top-right-bold-outline'">
 								<v-card class="elevation-2">
-									<v-card-text>{{ new Date().toISOString().substr(0, 10) }}의 종가는 상승할 것으로 예측 (&#8361;{{ predictStock | currency }})</v-card-text>
+									<v-card-text>
+										<p>{{ nextStockDate.toISOString().substr(0, 10) }}의 종가</p>
+										<p>UP할 것으로 예측</p>
+										<p>(&#8361;{{ predictStock | currency }})</p>
+									</v-card-text>
 								</v-card>
 							</v-timeline-item>
 						</template>
 						<template v-else-if="chartData[chartData.length-1][4] > predictStock">
-							<v-timeline-item :icon="'mdi-arrow-bottom-right-bold-outline'">
+							<v-timeline-item :color="'blue'" :icon="'mdi-arrow-bottom-right-bold-outline'">
 								<v-card class="elevation-2">
-									<v-card-text>{{ new Date().toISOString().substr(0, 10) }}의 종가는 하락할 것으로 예측 (&#8361;{{ predictStock | currency }})</v-card-text>
+									<v-card-text>
+										<p>{{ nextStockDate.toISOString().substr(0, 10) }}의 종가</p>
+										<p>DOWN할 것으로 예측</p>
+										<p>(&#8361;{{ predictStock | currency }})</p>
+									</v-card-text>
 								</v-card>
 							</v-timeline-item>
 						</template>
 						<template v-else>
-							<v-timeline-item :icon="'mdi-arrow-bottom-right-bold-outline'">
+							<v-timeline-item :color="'gray'" :icon="'mdi-arrow-bottom-right-bold-outline'">
 								<v-card class="elevation-2">
-									<v-card-text>{{ new Date().toISOString().substr(0, 10) }} ==</v-card-text>
+									<v-card-text>
+										<p>{{ nextStockDate.toISOString().substr(0, 10) }}의 종가</p>
+										<p>EQUAL할 것으로 예측</p>
+										<p>(&#8361;{{ predictStock | currency }})</p>
+									</v-card-text>
 								</v-card>
 							</v-timeline-item>
 						</template>
@@ -191,6 +203,16 @@
 		filters: {
 			currency: function(original) {
 				return parseInt(original)
+			}
+		},
+		computed: {
+			nextStockDate: function() {
+				let currentDate = new Date()
+
+				if(currentDate.getHours() >= 16) {
+					currentDate.setDate(currentDate.getDate()+1)
+				}
+				return currentDate
 			}
 		},
 		components: {

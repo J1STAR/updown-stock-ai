@@ -30,238 +30,82 @@ def train_stock_close(corp_code):
     res = requests.get("http://j1star.ddns.net:8000/stock/corp/" + corp_code)
     data = res.json()
     stock_info_list = data['corp']['stock_info']
-    pre_data_list = []
-    for stock_info in stock_info_list:
-        pre_dataset = [stock_info['date'][:10], stock_info['open_price'], stock_info['high_price'],
-                       stock_info['low_price'], stock_info['closing_price'], stock_info['volume']]
-        pre_data_list.append(pre_dataset)
-    df_stock_info = pd.DataFrame(pre_data_list, columns=['date', 'open', 'high', 'low', 'close', 'volume'])
-    df_stock_info = df_stock_info[df_stock_info.open != 0]
 
-    # print("len df stock info > ", len(df_stock_info))
+    type_list = ['open', 'low', 'high', 'close']
+    for t in type_list:
+        pre_data_list = []
+        for stock_info in stock_info_list:
+            pre_dataset = [stock_info['date'][:10], stock_info['open_price'], stock_info['high_price'],
+                           stock_info['low_price'], stock_info['closing_price'], stock_info['volume']]
+            pre_data_list.append(pre_dataset)
+        df_stock_info = pd.DataFrame(pre_data_list, columns=['date', 'open', 'high', 'low', 'close', 'volume'])
+        df_stock_info = df_stock_info[df_stock_info.open != 0]
 
-    sequence_length = 10
+        sequence_length = 10
 
-    df_stock_info.set_index('date')
-    # split_date = pd.Timestamp('2011-01-01')
-    #
-    # # print(split_date)
-    #
+        df_stock_info.set_index('date')
 
-    maxlength = len(df_stock_info)
-    row = int(round(maxlength * 0.9))
-    train = df_stock_info.loc[:row - 1, ['close']]
-    test = df_stock_info.loc[row:, ['close']]
+        maxlength = len(df_stock_info)
+        train = df_stock_info.loc[maxlength - 480 + sequence_length:maxlength - 121, [t]]
+        test = df_stock_info.loc[maxlength - 120 + sequence_length:, [t]]
 
-    # print(train)
-    # print(test)
+        sc = MinMaxScaler(feature_range=(0, 1))
 
-    # print(test)
-    # ax = train.plot()
-    # print(ax)
-    # ax2 = test.plot()
-    # test.plot(ax=ax)
-    # plt.xlabel('date')
-    # plt.ylabel('close')
-    # plt.legend(['train', 'test'])
+        train_sc = sc.fit_transform(train)
+        joblib.dump(sc, '../model/' + corp_code + '_{}_scaler.pkl'.format(t))
+        test_sc = sc.transform(test)
 
-    # print("학습데이터")
-    # print(train)
-    # print("테스트데이터")
-    # print(test)
+        train_sc_df = pd.DataFrame(train_sc, columns=[t], index=train.index)
+        test_sc_df = pd.DataFrame(test_sc, columns=[t], index=test.index)
 
-    sc = MinMaxScaler(feature_range=(0, 1))
-
-    train_sc = sc.fit_transform(train)
-    joblib.dump(sc, '../model/' + corp_code + '_close_scaler.pkl')
-    test_sc = sc.transform(test)
-
-    # print("train_sc")
-    # print(train_sc)
-
-    train_sc_df = pd.DataFrame(train_sc, columns=['종가'], index=train.index)
-    test_sc_df = pd.DataFrame(test_sc, columns=['종가'], index=test.index)
-
-    # print("train_sc_df")
-    # print(train_sc_df)
-
-    for s in range(1, sequence_length + 1):
-        train_sc_df['{}일전 종가'.format(s)] = train_sc_df['종가'].shift(s)
-        test_sc_df['{}일전 종가'.format(s)] = test_sc_df['종가'].shift(s)
-
-    # print(train_sc_df)
-
-    X_train = train_sc_df.dropna().drop('종가', axis=1)
-    Y_train = train_sc_df.dropna()[['종가']]
-    # dropna()가 none이 포함되어있는 부분을 제외해버리기때문에 앞의 몇일이 짤린다.
-    # print(X_train)
-    # print(Y_train)
-
-    X_test = test_sc_df.dropna().drop('종가', axis=1)
-    Y_test = test_sc_df.dropna()[['종가']]
-
-    # print(X_train)
-
-    X_train = X_train.values
-    # print(X_train)
-    X_test = X_test.values
-
-    Y_train = Y_train.values
-    # print(Y_train.shape)
-    # print(len(Y_train))
-    # print("Y_train")
-    # print(type(Y_train))
-    # print(Y_train)
-    Y_test = Y_test.values
-
-    # print(len(Y_test))
-    tmp = len(Y_test) % sequence_length
-    if tmp != 0:
-        Y_test = Y_test[tmp:]
-    # print(len(Y_test))
-
-    X_test = X_test[tmp:]
-
-    X_train_t = X_train.reshape(X_train.shape[0], sequence_length, 1)
-    # print(X_train_t.shape)
-    X_test_t = X_test.reshape(X_test.shape[0], sequence_length, 1)
-    # print(X_test_t.shape)
-
-    # print("최종 DATA")
-    # print(type(X_train_t))
-    # print(X_train_t)
-
-    # val_X_train_t = X_train_t[-120:]
-    # print(val_X_train_t.shape)
-    # print("val_X_train_t", val_X_train_t)
-    # val_Y_train = Y_train[-120:]
-    # print(len(val_X_train_t))
-    # print(len(val_Y_train))
-    # print(val_Y_train)
-    # X_train_t = X_train_t[:240]
-    # Y_train = Y_train[:240]
+        for s in range(1, sequence_length + 1):
+            train_sc_df['{}일전 종가'.format(s)] = train_sc_df[t].shift(s)
+            test_sc_df['{}일전 종가'.format(s)] = test_sc_df[t].shift(s)
 
 
-    # LSTM 모델 만들기
-    # Clear session
-    # 현재의 TF graph를 버리고 새로 만든다. 예전 모델, 레이어와의 충돌을 피한다.
-    K.clear_session()
+        X_train = train_sc_df.dropna().drop(t, axis=1)
+        Y_train = train_sc_df.dropna()[[t]]
+        # dropna()가 none이 포함되어있는 부분을 제외해버리기때문에 앞의 몇일이 짤린다.
 
-    model = Sequential()
-    model.add(LSTM(50, return_sequences=True, input_shape=(sequence_length, 1)))
-    model.add(LSTM(64, return_sequences=True))
-    model.add(LSTM(64, return_sequences=False))
-    model.add(Dense(1))
+        X_test = test_sc_df.dropna().drop(t, axis=1)
+        Y_test = test_sc_df.dropna()[[t]]
 
-    adam = optimizers.adam(learning_rate=0.0001)
-    model.compile(loss='mean_squared_error', optimizer=adam)
+        X_train = X_train.values
+        X_test = X_test.values
 
-    # loss를 모니터링해서 patience만큼 연속으로 loss률이 떨어지지 않으면 훈련을 멈춘다.
-    early_stop = [EarlyStopping(monitor='val_loss', patience=20, verbose=1),
-                  ModelCheckpoint(filepath='../model/' + corp_code + '_best_model_close.h5', monitor='val_loss', save_best_only=True)]
+        Y_train = Y_train.values
+        Y_test = Y_test.values
 
-    history = model.fit(X_train_t, Y_train, epochs=100, verbose=2, batch_size=10, validation_data=(X_test_t, Y_test),
-                        callbacks=early_stop)
+        tmp = len(Y_test) % sequence_length
+        if tmp != 0:
+            Y_test = Y_test[tmp:]
 
-    training_loss = history.history["loss"]
-    test_loss = history.history["val_loss"]
+        X_test = X_test[tmp:]
 
-    # print(type(training_loss))
+        X_train_t = X_train.reshape(X_train.shape[0], sequence_length, 1)
+        X_test_t = X_test.reshape(X_test.shape[0], sequence_length, 1)
 
-    epoch_count = range(1, len(training_loss) + 1)
 
-    # plt.plot(epoch_count, training_loss, "r--")
-    # plt.plot(epoch_count, test_loss, "b-")
-    # plt.legend(["Training Loss", "Test loss"])
-    # plt.xlabel("Epoch")
-    # plt.ylabel("Loss")
-    # plt.show()
+        # LSTM 모델 만들기
+        # Clear session
+        # 현재의 TF graph를 버리고 새로 만든다. 예전 모델, 레이어와의 충돌을 피한다.
+        K.clear_session()
 
-    # plt.figure(2)
-    #
-    # plt.plot(epoch_count, training_loss, "r--")
-    #
-    # plt.plot(epoch_count, test_loss, "b-")
-    #
-    # plt.legend(["Training Loss", "Test Loss"])
-    #
-    # plt.xlabel("Epoch")
-    # plt.ylabel("Loss Score")
+        model = Sequential()
+        model.add(LSTM(50, return_sequences=True, input_shape=(sequence_length, 1)))
+        model.add(LSTM(64, return_sequences=True))
+        model.add(LSTM(64, return_sequences=False))
+        model.add(Dense(1))
 
-    Y_pred = model.predict(X_test_t)
-    # print("X_TEST_T > ", X_test_t)
-    best_model = load_model('../model/' + corp_code + '_best_model_close.h5')
+        adam = optimizers.adam(learning_rate=0.0001)
+        model.compile(loss='mean_squared_error', optimizer=adam)
 
-    Y_pred_best = best_model.predict(X_test_t)
+        # loss를 모니터링해서 patience만큼 연속으로 loss률이 떨어지지 않으면 훈련을 멈춘다.
+        early_stop = [EarlyStopping(monitor='val_loss', patience=20, verbose=1),
+                      ModelCheckpoint(filepath='../model/' + corp_code + '_best_model_{}.h5'.format(t), monitor='val_loss', save_best_only=True)]
 
-    plt.figure(3)
-
-    count = range(1, len(Y_pred) + 1)
-    # print(Y_test)
-    # print(Y_pred)
-    # plt.plot(count, sc.inverse_transform(Y_test), "r--")
-    # plt.plot(count, sc.inverse_transform(Y_pred), "b-")
-
-    # plt.legend(["Y_test", "Y_pred_by_close"])
-
-    # Y_pred = model.predict(X_test_t, batch_size=1)
-
-    # plt.figure(4)
-    #
-    # c = range(1, len(Y_train)+1)
-    # count= range(len(Y_train)+1, len(Y_train)+len(Y_pred)+1)
-    # ax = plt.plot(c, Y_train)
-    # plt.plot(count, Y_test)
-    # plt.plot(count, Y_pred_best)
-    count = range(1, len(Y_pred) + 1)
-    # plt.plot(count, sc.inverse_transform(Y_test))
-    # plt.plot(count, sc.inverse_transform(Y_pred_best))
-    #
-    # plt.legend(["Y_test", "Y_pred_best"])
-
-    # plt.figure(5)
-
-    c = range(1, len(Y_train) + 1)
-    count = range(len(Y_train) + 1, len(Y_train) + len(Y_pred) + 1)
-    # ax = plt.plot(c, sc.inverse_transform(Y_train))
-    # plt.plot(count, sc.inverse_transform(Y_test))
-    # plt.plot(count, sc.inverse_transform(Y_pred_best))
-
-    # plt.legend(["Y_train", "Y_test", "Y_pred_best"])
-
-    # print(Y_test)
-    # print(Y_pred)
-
-    count = 0
-    best_count = 0
-    for val in range(1, len(Y_test)):
-        test_val = Y_test[val] - Y_test[val - 1]
-        pred_val = Y_pred[val] - Y_test[val - 1]
-        pred_best_val = Y_pred_best[val] - Y_test[val - 1]
-        if test_val > 0:
-            test_val = 1
-        else:
-            test_val = -1
-        if pred_val > 0:
-            pred_val = 1
-        else:
-            pred_val = -1
-        if pred_best_val > 0:
-            pred_best_val = 1
-        else:
-            pred_best_val = -1
-        if test_val == pred_best_val:
-            best_count += 1
-
-        if test_val == pred_val:
-            count += 1
-
-    # print("count = ", count)
-    # print("총 개수 = ", len(Y_test))
-    # print("모델 정답률 : ", count / len(Y_test))
-    # print("베스트 모델 정답률 : ", best_count / len(Y_test))
-
-    # plt.show()
+        history = model.fit(X_train_t, Y_train, epochs=100, verbose=2, batch_size=10, validation_data=(X_test_t, Y_test),
+                            callbacks=early_stop)
 
 
 if __name__ == '__main__':
@@ -269,7 +113,8 @@ if __name__ == '__main__':
     #
     # corp_list = res.json()['corp_code_list']
 
+    corp_list = ['263750', '036570', '067160', '078340']
 
-    corp_list = ['263750']
     pool = Pool(processes=1)
     pool.map(train_stock_close, corp_list)
+
