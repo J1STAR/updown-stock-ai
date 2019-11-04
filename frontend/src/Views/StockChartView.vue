@@ -92,41 +92,29 @@
 					md2
 			>
 				<v-timeline dense>
-					<v-timeline-item :color="'red'" :icon="'mdi-arrow-top-right-bold-outline'">
-						<v-card class="elevation-2">
-							<v-card-text>D+1 주가 상승 예측</v-card-text>
-						</v-card>
-					</v-timeline-item>
-					<v-timeline-item :icon="'mdi-arrow-bottom-right-bold-outline'">
-						<v-card class="elevation-2">
-							<v-card-text>D+2 주가 하락 예측</v-card-text>
-						</v-card>
-					</v-timeline-item>
-					<v-timeline-item :color="'red'" :icon="'mdi-arrow-top-right-bold-outline'">
-						<v-card class="elevation-2">
-							<v-card-text>D+3 주가 상승 예측</v-card-text>
-						</v-card>
-					</v-timeline-item>
-					<v-timeline-item :color="'red'" :icon="'mdi-arrow-top-right-bold-outline'">
-						<v-card class="elevation-2">
-							<v-card-text>D+4 주가 상승 예측</v-card-text>
-						</v-card>
-					</v-timeline-item>
-					<v-timeline-item :icon="'mdi-arrow-bottom-right-bold-outline'">
-						<v-card class="elevation-2">
-							<v-card-text>D+5 주가 하락 예측</v-card-text>
-						</v-card>
-					</v-timeline-item>
-					<v-timeline-item :icon="'mdi-arrow-bottom-right-bold-outline'">
-						<v-card class="elevation-2">
-							<v-card-text>D+6 주가 하락 예측</v-card-text>
-						</v-card>
-					</v-timeline-item>
-					<v-timeline-item :icon="'mdi-arrow-bottom-right-bold-outline'">
-						<v-card class="elevation-2">
-							<v-card-text>D+7 주가 하락 예측</v-card-text>
-						</v-card>
-					</v-timeline-item>
+					<template v-if="status && !isNaN(predictStock)">
+						<template v-if="chartData[chartData.length-1][4] < predictStock">
+							<v-timeline-item :color="'red'" :icon="'mdi-arrow-top-right-bold-outline'">
+								<v-card class="elevation-2">
+									<v-card-text>{{ new Date().toISOString().substr(0, 10) }}의 종가는 상승할 것으로 예측 (&#8361;{{ predictStock | currency }})</v-card-text>
+								</v-card>
+							</v-timeline-item>
+						</template>
+						<template v-else-if="chartData[chartData.length-1][4] > predictStock">
+							<v-timeline-item :icon="'mdi-arrow-bottom-right-bold-outline'">
+								<v-card class="elevation-2">
+									<v-card-text>{{ new Date().toISOString().substr(0, 10) }}의 종가는 하락할 것으로 예측 (&#8361;{{ predictStock | currency }})</v-card-text>
+								</v-card>
+							</v-timeline-item>
+						</template>
+						<template v-else>
+							<v-timeline-item :icon="'mdi-arrow-bottom-right-bold-outline'">
+								<v-card class="elevation-2">
+									<v-card-text>{{ new Date().toISOString().substr(0, 10) }} ==</v-card-text>
+								</v-card>
+							</v-timeline-item>
+						</template>
+					</template>
 				</v-timeline>
 			</v-flex>
 		</v-layout>
@@ -153,6 +141,7 @@
 				corporations: [
 				],
 				chartData: [],
+				predictStock: null
 			};
 		},
 		async mounted() {
@@ -177,7 +166,7 @@
 				this.status = false
 
 				let res = await this.$http.get("/stock/corp/"+ this.corp.corp_code)
-				
+
 				let stock_info = res.data.corp.stock_info
 
 				if(this.date1 >= this.date2) {
@@ -194,10 +183,16 @@
 				}
 
 				this.$emit("changeCorp", this.corp)
+				this.predictStock = Number(res.data.predict)
+
 				this.status = true
 			}
 		},
-		filters: {},
+		filters: {
+			currency: function(original) {
+				return parseInt(original)
+			}
+		},
 		components: {
 			CandleChart
 		}
