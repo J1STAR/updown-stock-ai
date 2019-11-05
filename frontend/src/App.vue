@@ -19,7 +19,7 @@
 				<stock-chart-view @changeCorp="setCorp"></stock-chart-view>
 			</v-flex>
 			<v-flex xs12>
-				<news-list :news_target="corp.name"></news-list>
+				<news-list :news_target="corp"></news-list>
 			</v-flex>
 			<team-info></team-info>
 		</v-content>

@@ -11,14 +11,14 @@ import urllib.parse
 # Create your views here.
 class NewsView(APIView):
     def get(self, request, corp=None):
-        news_data = requests.get("https://news.google.com/search?q={}&hl=ko&gl=KR&ceid=KR:ko".format(urllib.parse.quote(corp)))
+        news_data = requests.get("https://finance.naver.com/item/news_news.nhn?code={}&page=&sm=entity_id.basic&clusterId=".format(urllib.parse.quote(corp)))
 
         soup = BeautifulSoup(news_data.text, 'html.parser')
-        news_data_list = soup.select("c-wiz > div > div > div > div > main > c-wiz > div > div > div > article > h3 > a")
+        news_data_list = soup.select("body > div > table.type5 > tbody > tr > td.title > a")
 
         news_list = []
         for news in news_data_list:
-            link = news.get('href').replace(".", "https://news.google.com")
+            link = "https://finance.naver.com" + news.get('href')
             title = news.text
             news_list.append({"link": link, "title": title})
 

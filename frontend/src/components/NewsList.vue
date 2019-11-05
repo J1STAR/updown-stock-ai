@@ -4,7 +4,7 @@
             <v-flex>
                 <v-card>
                     <v-list>
-                        <v-subheader id="news_corp_name"><span>{{ news_target }}&nbsp;</span>관련 뉴스</v-subheader>
+                        <v-subheader id="news_corp_name"><span>{{ news_target.name }}&nbsp;</span>관련 뉴스</v-subheader>
 
                         <template v-if="status">
                             <template v-if="news_list.length !== 0">
@@ -16,7 +16,7 @@
                                     </v-list-item-content>
                                 </v-list-item>
                             </template>
-                            <template>
+                            <template v-else>
                                 <v-list-item>
                                     <v-list-item-content>
                                         <v-list-item-title>
@@ -52,7 +52,7 @@
         name: "NewsList",
         props: {
             news_target: {
-                type: String
+                type: Object
             },
         },
         data() {
@@ -63,7 +63,7 @@
         },
         watch: {
             news_target: function(target) {
-                this.loadNewsData(target)
+                this.loadNewsData(target.corp_code)
             }
         },
         methods: {

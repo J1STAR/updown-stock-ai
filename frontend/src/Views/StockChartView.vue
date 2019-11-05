@@ -91,42 +91,145 @@
 					sm12
 					md2
 			>
+				<v-subheader dark class="title font-weight-bold">{{ nextStockDate.toISOString().substr(0, 10) }}의 종가 예측</v-subheader>
 				<v-timeline dense>
-					<v-timeline-item :color="'red'" :icon="'mdi-arrow-top-right-bold-outline'">
-						<v-card class="elevation-2">
-							<v-card-text>D+1 주가 상승 예측</v-card-text>
-						</v-card>
-					</v-timeline-item>
-					<v-timeline-item :icon="'mdi-arrow-bottom-right-bold-outline'">
-						<v-card class="elevation-2">
-							<v-card-text>D+2 주가 하락 예측</v-card-text>
-						</v-card>
-					</v-timeline-item>
-					<v-timeline-item :color="'red'" :icon="'mdi-arrow-top-right-bold-outline'">
-						<v-card class="elevation-2">
-							<v-card-text>D+3 주가 상승 예측</v-card-text>
-						</v-card>
-					</v-timeline-item>
-					<v-timeline-item :color="'red'" :icon="'mdi-arrow-top-right-bold-outline'">
-						<v-card class="elevation-2">
-							<v-card-text>D+4 주가 상승 예측</v-card-text>
-						</v-card>
-					</v-timeline-item>
-					<v-timeline-item :icon="'mdi-arrow-bottom-right-bold-outline'">
-						<v-card class="elevation-2">
-							<v-card-text>D+5 주가 하락 예측</v-card-text>
-						</v-card>
-					</v-timeline-item>
-					<v-timeline-item :icon="'mdi-arrow-bottom-right-bold-outline'">
-						<v-card class="elevation-2">
-							<v-card-text>D+6 주가 하락 예측</v-card-text>
-						</v-card>
-					</v-timeline-item>
-					<v-timeline-item :icon="'mdi-arrow-bottom-right-bold-outline'">
-						<v-card class="elevation-2">
-							<v-card-text>D+7 주가 하락 예측</v-card-text>
-						</v-card>
-					</v-timeline-item>
+					<template v-if="status && predictStock">
+						<template v-if="chartData[chartData.length-1][4] < parseInt(predictStock.open)">
+							<v-timeline-item :color="'red'" :icon="'mdi-arrow-top-right-bold-outline'">
+								<v-card class="elevation-2">
+									<v-card-text class="font-weight-black body-1">
+										<p>시가로 분석했을 때</p>
+										<p>상승할 것으로 예측</p>
+										<p>(&#8361;{{ predictStock.open | currency }})</p>
+									</v-card-text>
+								</v-card>
+							</v-timeline-item>
+						</template>
+						<template v-else-if="chartData[chartData.length-1][4] > parseInt(predictStock.open)">
+							<v-timeline-item :color="'blue'" :icon="'mdi-arrow-bottom-right-bold-outline'">
+								<v-card class="elevation-2">
+									<v-card-text class="font-weight-black body-1">
+										<p>시가로 분석했을 때</p>
+										<p>하락할 것으로 예측</p>
+										<p>(&#8361;{{ predictStock.open | currency }})</p>
+									</v-card-text>
+								</v-card>
+							</v-timeline-item>
+						</template>
+						<template v-else>
+							<v-timeline-item :color="'gray'" :icon="'mdi-arrow-bottom-right-bold-outline'">
+								<v-card class="elevation-2">
+									<v-card-text class="font-weight-black body-1">
+										<p>시가로 분석했을 때</p>
+										<p>그대로일 것으로 예측</p>
+										<p>(&#8361;{{ predictStock.open | currency }})</p>
+									</v-card-text>
+								</v-card>
+							</v-timeline-item>
+						</template>
+
+						<template v-if="chartData[chartData.length-1][4] < parseInt(predictStock.high)">
+							<v-timeline-item :color="'red'" :icon="'mdi-arrow-top-right-bold-outline'">
+								<v-card class="elevation-2">
+									<v-card-text class="font-weight-black body-1">
+										<p>고가로 예측했을 때</p>
+										<p>상승할 것으로 예측</p>
+										<p>(&#8361;{{ predictStock.high | currency }})</p>
+									</v-card-text>
+								</v-card>
+							</v-timeline-item>
+						</template>
+						<template v-else-if="chartData[chartData.length-1][4] > parseInt(predictStock.high)">
+							<v-timeline-item :color="'blue'" :icon="'mdi-arrow-bottom-right-bold-outline'">
+								<v-card class="elevation-2">
+									<v-card-text class="font-weight-black body-1">
+										<p>고가로 예측했을 때</p>
+										<p>하락할 것으로 예측</p>
+										<p>(&#8361;{{ predictStock.high | currency }})</p>
+									</v-card-text>
+								</v-card>
+							</v-timeline-item>
+						</template>
+						<template v-else>
+							<v-timeline-item :color="'gray'" :icon="'mdi-arrow-bottom-right-bold-outline'">
+								<v-card class="elevation-2">
+									<v-card-text class="font-weight-black body-1">
+										<p>고가로 예측했을 때</p>
+										<p>그대로일 것으로 예측</p>
+										<p>(&#8361;{{ predictStock.high | currency }})</p>
+									</v-card-text>
+								</v-card>
+							</v-timeline-item>
+						</template>
+
+						<template v-if="chartData[chartData.length-1][4] < parseInt(predictStock.low)">
+							<v-timeline-item :color="'red'" :icon="'mdi-arrow-top-right-bold-outline'">
+								<v-card class="elevation-2">
+									<v-card-text class="font-weight-black body-1">
+										<p>저가로 예측했을 때</p>
+										<p>상승할 것으로 예측</p>
+										<p>(&#8361;{{ predictStock.low | currency }})</p>
+									</v-card-text>
+								</v-card>
+							</v-timeline-item>
+						</template>
+						<template v-else-if="chartData[chartData.length-1][4] > parseInt(predictStock.low)">
+							<v-timeline-item :color="'blue'" :icon="'mdi-arrow-bottom-right-bold-outline'">
+								<v-card class="elevation-2">
+									<v-card-text class="font-weight-black body-1">
+										<p>저가로 예측했을 때</p>
+										<p>하락할 것으로 예측</p>
+										<p>(&#8361;{{ predictStock.low | currency }})</p>
+									</v-card-text>
+								</v-card>
+							</v-timeline-item>
+						</template>
+						<template v-else>
+							<v-timeline-item :color="'gray'" :icon="'mdi-arrow-bottom-right-bold-outline'">
+								<v-card class="elevation-2">
+									<v-card-text class="font-weight-black body-1">
+										<p>저가로 예측했을 때</p>
+										<p>그대로일 것으로 예측</p>
+										<p>(&#8361;{{ predictStock.low | currency }})</p>
+									</v-card-text>
+								</v-card>
+							</v-timeline-item>
+						</template>
+
+						<template v-if="chartData[chartData.length-1][4] < parseInt(predictStock.close)">
+							<v-timeline-item :color="'red'" :icon="'mdi-arrow-top-right-bold-outline'">
+								<v-card class="elevation-2">
+									<v-card-text class="font-weight-black body-1">
+										<p>종가로 예측했을 때</p>
+										<p>상승할 것으로 예측</p>
+										<p>(&#8361;{{ predictStock.close | currency }})</p>
+									</v-card-text>
+								</v-card>
+							</v-timeline-item>
+						</template>
+						<template v-else-if="chartData[chartData.length-1][4] > parseInt(predictStock.close)">
+							<v-timeline-item :color="'blue'" :icon="'mdi-arrow-bottom-right-bold-outline'">
+								<v-card class="elevation-2">
+									<v-card-text class="font-weight-black body-1">
+										<p>종가로 예측했을 때</p>
+										<p>하락할 것으로 예측</p>
+										<p>(&#8361;{{ predictStock.close | currency }})</p>
+									</v-card-text>
+								</v-card>
+							</v-timeline-item>
+						</template>
+						<template v-else>
+							<v-timeline-item :color="'gray'" :icon="'mdi-arrow-bottom-right-bold-outline'">
+								<v-card class="elevation-2">
+									<v-card-text class="font-weight-black body-1">
+										<p>종가로 예측했을 때</p>
+										<p>그대로일 것으로 예측</p>
+										<p>(&#8361;{{ predictStock.close | currency }})</p>
+									</v-card-text>
+								</v-card>
+							</v-timeline-item>
+						</template>
+					</template>
 				</v-timeline>
 			</v-flex>
 		</v-layout>
@@ -153,6 +256,7 @@
 				corporations: [
 				],
 				chartData: [],
+				predictStock: null
 			};
 		},
 		async mounted() {
@@ -194,10 +298,28 @@
 				}
 
 				this.$emit("changeCorp", this.corp)
+				if(res.data.predict) {
+					this.predictStock = res.data.predict
+				}
+
 				this.status = true
 			}
 		},
-		filters: {},
+		filters: {
+			currency: function(original) {
+				return parseInt(original)
+			}
+		},
+		computed: {
+			nextStockDate: function() {
+				let currentDate = new Date()
+
+				if(currentDate.getHours() >= 16) {
+					currentDate.setDate(currentDate.getDate()+1)
+				}
+				return currentDate
+			}
+		},
 		components: {
 			CandleChart
 		}
