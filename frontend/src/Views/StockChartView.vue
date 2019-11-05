@@ -279,6 +279,7 @@
 			},
 			loadCorporationInfo: async function() {
 				this.status = false
+                this.predictStock = null
 
 				let res = await this.$http.get("/stock/corp/"+ this.corp.corp_code)
 
