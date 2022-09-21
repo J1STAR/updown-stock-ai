@@ -13,7 +13,7 @@
     "trading-vue-js": "^0.3.12",
     "vue": "^2.6.10",
     "vue-router": "^3.1.3",
-    "vuetify": "^2.1.3",
+    "vuetify": "^2.6.10",
     "vuex": "^3.1.1",
     "webpack-bundle-tracker": "^0.4.3"
   },
